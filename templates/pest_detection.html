@@ -1,0 +1,315 @@
+{% extends 'base.html' %}
+
+{% block title %}Pest Detection - Mlimi App{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h1><i class="fas fa-bug"></i> AI Pest Detection</h1>
+        <p class="text-muted">Upload images of your crops to get instant AI-powered pest and disease diagnosis</p>
+    </div>
+</div>
+
+<!-- Upload Section -->
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-upload"></i> Upload Image</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" enctype="multipart/form-data" id="pestDetectionForm">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="image" class="form-label">Crop Image *</label>
+                        <input type="file" name="image" id="image" class="form-control" accept="image/*" required>
+                        <div class="form-text">
+                            <i class="fas fa-info-circle"></i> 
+                            Upload a clear image of the affected plant area. Supported formats: JPG, PNG, JPEG
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="crop_type" class="form-label">Crop Type</label>
+                        <select name="crop_type" id="crop_type" class="form-select">
+                            <option value="">Select Crop Type (Optional)</option>
+                            <option value="maize">Maize</option>
+                            <option value="rice">Rice</option>
+                            <option value="beans">Beans</option>
+                            <option value="tomatoes">Tomatoes</option>
+                            <option value="potatoes">Potatoes</option>
+                            <option value="cassava">Cassava</option>
+                            <option value="sweet_potato">Sweet Potato</option>
+                            <option value="groundnuts">Groundnuts</option>
+                            <option value="soybeans">Soybeans</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Additional Details</label>
+                        <textarea name="description" id="description" class="form-control" rows="3" 
+                                  placeholder="Describe what you're seeing, symptoms, when it started, etc."></textarea>
+                    </div>
+                    
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary btn-lg" id="analyzeBtn">
+                            <i class="fas fa-search"></i> Analyze Image
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Image Preview -->
+        <div class="card mt-3" id="imagePreview" style="display: none;">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="fas fa-eye"></i> Image Preview</h6>
+            </div>
+            <div class="card-body text-center">
+                <img id="previewImage" class="img-fluid rounded" style="max-height: 300px;">
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <!-- Analysis Results -->
+        <div class="card" id="analysisResults" style="display: none;">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-microscope"></i> Analysis Results</h5>
+            </div>
+            <div class="card-body">
+                <div id="loadingAnalysis" class="text-center py-4">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Analyzing...</span>
+                    </div>
+                    <p class="mt-2 text-muted">Analyzing your image...</p>
+                </div>
+                
+                <div id="analysisContent" style="display: none;">
+                    <div class="mb-3">
+                        <h6>Diagnosis</h6>
+                        <div class="alert alert-info">
+                            <strong id="diagnosisResult">Healthy Plant</strong>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <h6>Confidence Level</h6>
+                        <div class="progress mb-2">
+                            <div class="progress-bar" id="confidenceBar" role="progressbar" style="width: 0%"></div>
+                        </div>
+                        <small class="text-muted" id="confidenceText">0% confidence</small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <h6>Recommended Actions</h6>
+                        <ul class="list-group" id="recommendationsList">
+                            <li class="list-group-item">No specific actions needed</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <h6>Prevention Tips</h6>
+                        <ul class="list-group" id="preventionList">
+                            <li class="list-group-item">Maintain good crop hygiene</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- How It Works -->
+        <div class="card mt-3">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="fas fa-question-circle"></i> How It Works</h6>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-4 text-center">
+                        <div class="bg-primary rounded-circle d-inline-flex align-items-center justify-content-center mb-2" 
+                             style="width: 50px; height: 50px;">
+                            <i class="fas fa-camera text-white"></i>
+                        </div>
+                        <small class="d-block">1. Upload Image</small>
+                    </div>
+                    <div class="col-4 text-center">
+                        <div class="bg-warning rounded-circle d-inline-flex align-items-center justify-content-center mb-2" 
+                             style="width: 50px; height: 50px;">
+                            <i class="fas fa-brain text-white"></i>
+                        </div>
+                        <small class="d-block">2. AI Analysis</small>
+                    </div>
+                    <div class="col-4 text-center">
+                        <div class="bg-success rounded-circle d-inline-flex align-items-center justify-content-center mb-2" 
+                             style="width: 50px; height: 50px;">
+                            <i class="fas fa-lightbulb text-white"></i>
+                        </div>
+                        <small class="d-block">3. Get Results</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Tips for Better Results -->
+        <div class="card mt-3">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="fas fa-lightbulb"></i> Tips for Better Results</h6>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled mb-0">
+                    <li><i class="fas fa-check text-success me-2"></i> Use good lighting</li>
+                    <li><i class="fas fa-check text-success me-2"></i> Focus on affected areas</li>
+                    <li><i class="fas fa-check text-success me-2"></i> Avoid shadows and blur</li>
+                    <li><i class="fas fa-check text-success me-2"></i> Include multiple angles if needed</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Diagnoses -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-history"></i> Recent Diagnoses</h5>
+            </div>
+            <div class="card-body">
+                {% if recent_diagnoses %}
+                    <div class="row g-3">
+                        {% for diagnosis in recent_diagnoses %}
+                        <div class="col-md-4">
+                            <div class="card h-100">
+                                {% if diagnosis.image %}
+                                    <img src="{{ diagnosis.image.url }}" class="card-img-top" alt="Diagnosis Image" 
+                                         style="height: 150px; object-fit: cover;">
+                                {% else %}
+                                    <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 150px;">
+                                        <i class="fas fa-image text-muted" style="font-size: 2rem;"></i>
+                                    </div>
+                                {% endif %}
+                                <div class="card-body">
+                                    <h6 class="card-title">{{ diagnosis.diagnosis_result|truncatewords:5 }}</h6>
+                                    <p class="card-text small text-muted">
+                                        <i class="fas fa-calendar"></i> {{ diagnosis.created_at|date:"M d, Y" }}
+                                    </p>
+                                    <span class="badge bg-primary">{{ diagnosis.confidence_level|floatformat:1 }}% confidence</span>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-3">
+                        <i class="fas fa-history text-muted" style="font-size: 2rem;"></i>
+                        <p class="text-muted mt-2">No diagnoses yet. Upload your first image to get started!</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .progress-bar {
+        transition: width 0.6s ease;
+    }
+    
+    .card {
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    
+    .card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.1);
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const imageInput = document.getElementById('image');
+    const imagePreview = document.getElementById('imagePreview');
+    const previewImage = document.getElementById('previewImage');
+    const analysisResults = document.getElementById('analysisResults');
+    const loadingAnalysis = document.getElementById('loadingAnalysis');
+    const analysisContent = document.getElementById('analysisContent');
+    const analyzeBtn = document.getElementById('analyzeBtn');
+    
+    // Image preview
+    imageInput.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                previewImage.src = e.target.result;
+                imagePreview.style.display = 'block';
+                analysisResults.style.display = 'block';
+                loadingAnalysis.style.display = 'block';
+                analysisContent.style.display = 'none';
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+    
+    // Form submission
+    document.getElementById('pestDetectionForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(this);
+        analyzeBtn.disabled = true;
+        analyzeBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Analyzing...';
+        
+        // Simulate AI analysis (replace with actual API call)
+        setTimeout(() => {
+            simulateAnalysis();
+            analyzeBtn.disabled = false;
+            analyzeBtn.innerHTML = '<i class="fas fa-search"></i> Analyze Image';
+        }, 3000);
+    });
+    
+    function simulateAnalysis() {
+        loadingAnalysis.style.display = 'none';
+        analysisContent.style.display = 'block';
+        
+        // Simulate results (replace with actual API response)
+        const diagnosis = 'Early Blight Disease';
+        const confidence = 87.5;
+        const recommendations = [
+            'Remove infected leaves immediately',
+            'Apply copper-based fungicide',
+            'Improve air circulation around plants',
+            'Avoid overhead watering'
+        ];
+        const prevention = [
+            'Plant resistant varieties',
+            'Maintain proper spacing',
+            'Rotate crops annually',
+            'Keep garden clean'
+        ];
+        
+        document.getElementById('diagnosisResult').textContent = diagnosis;
+        document.getElementById('confidenceBar').style.width = confidence + '%';
+        document.getElementById('confidenceText').textContent = confidence + '% confidence';
+        
+        // Update recommendations
+        const recList = document.getElementById('recommendationsList');
+        recList.innerHTML = recommendations.map(rec => 
+            `<li class="list-group-item"><i class="fas fa-arrow-right text-primary me-2"></i>${rec}</li>`
+        ).join('');
+        
+        // Update prevention tips
+        const prevList = document.getElementById('preventionList');
+        prevList.innerHTML = prevention.map(prev => 
+            `<li class="list-group-item"><i class="fas fa-shield-alt text-success me-2"></i>${prev}</li>`
+        ).join('');
+    }
+});
+</script>
+{% endblock %}
+
+

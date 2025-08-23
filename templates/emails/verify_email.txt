@@ -1,0 +1,8 @@
+Hi {{ user.username }},
+
+Please verify your email by visiting the link below:
+
+{{ verify_link }}
+
+Thanks,
+SOKOTECH

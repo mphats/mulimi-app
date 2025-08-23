@@ -1,0 +1,272 @@
+{% extends 'base.html' %}
+
+{% block title %}Home - Mlimi App{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section text-center">
+    <div class="container">
+        <h1 class="display-4 mb-4">
+            <i class="fas fa-seedling"></i> Mlimi App
+        </h1>
+        <p class="lead mb-4">Your Digital Agricultural Assistant for Better Farming in Malawi</p>
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <p class="mb-4">
+                    Access real-time market prices, weather forecasts, pest detection, and expert farming advice 
+                    all in one place. Designed specifically for smallholder farmers in Malawi.
+                </p>
+                {% if not user.is_authenticated %}
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                        <a href="{% url 'frontend:register' %}" class="btn btn-light btn-lg me-md-2">
+                            <i class="fas fa-user-plus"></i> Get Started
+                        </a>
+                        <a href="{% url 'frontend:login' %}" class="btn btn-outline-light btn-lg">
+                            <i class="fas fa-sign-in-alt"></i> Sign In
+                        </a>
+                    </div>
+                {% else %}
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                        <a href="{% url 'frontend:products' %}" class="btn btn-light btn-lg me-md-2">
+                            <i class="fas fa-shopping-cart"></i> Browse Products
+                        </a>
+                        <a href="{% url 'frontend:pest_detection' %}" class="btn btn-outline-light btn-lg">
+                            <i class="fas fa-bug"></i> Detect Pests
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="py-5">
+    <div class="container">
+        <h2 class="text-center mb-5">Key Features</h2>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="card h-100 text-center">
+                    <div class="card-body">
+                        <div class="feature-icon">
+                            <i class="fas fa-shopping-cart"></i>
+                        </div>
+                        <h5 class="card-title">Product Marketplace</h5>
+                        <p class="card-text">
+                            Buy and sell agricultural products directly with other farmers. 
+                            Upload photos, set prices, and connect with buyers.
+                        </p>
+                        <a href="{% url 'frontend:products' %}" class="btn btn-primary">Explore Products</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card h-100 text-center">
+                    <div class="card-body">
+                        <div class="feature-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <h5 class="card-title">Market Prices</h5>
+                        <p class="card-text">
+                            Get real-time market prices from different locations across Malawi. 
+                            Make informed decisions about when and where to sell.
+                        </p>
+                        <a href="{% url 'frontend:market_prices' %}" class="btn btn-primary">View Prices</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card h-100 text-center">
+                    <div class="card-body">
+                        <div class="feature-icon">
+                            <i class="fas fa-cloud-sun"></i>
+                        </div>
+                        <h5 class="card-title">Weather Forecast</h5>
+                        <p class="card-text">
+                            Access daily weather forecasts and receive alerts for critical weather conditions 
+                            that could affect your crops.
+                        </p>
+                        <a href="{% url 'frontend:weather' %}" class="btn btn-primary">Check Weather</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card h-100 text-center">
+                    <div class="card-body">
+                        <div class="feature-icon">
+                            <i class="fas fa-bug"></i>
+                        </div>
+                        <h5 class="card-title">Pest Detection</h5>
+                        <p class="card-text">
+                            Upload photos of your crops to get AI-powered pest and disease diagnosis 
+                            with treatment recommendations.
+                        </p>
+                        <a href="{% url 'frontend:pest_detection' %}" class="btn btn-primary">Detect Pests</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card h-100 text-center">
+                    <div class="card-body">
+                        <div class="feature-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <h5 class="card-title">Community Forum</h5>
+                        <p class="card-text">
+                            Connect with other farmers, ask questions, share advice, and learn 
+                            from the community's collective knowledge.
+                        </p>
+                        <a href="{% url 'frontend:community' %}" class="btn btn-primary">Join Community</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card h-100 text-center">
+                    <div class="card-body">
+                        <div class="feature-icon">
+                            <i class="fas fa-newspaper"></i>
+                        </div>
+                        <h5 class="card-title">Farming Newsletters</h5>
+                        <p class="card-text">
+                            Receive expert farming tips, market trends, and seasonal advice 
+                            to improve your agricultural practices.
+                        </p>
+                        <a href="{% url 'frontend:newsletters' %}" class="btn btn-primary">Read Newsletters</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Quick Actions Section -->
+{% if user.is_authenticated %}
+<section class="py-5 bg-light">
+    <div class="container">
+        <h3 class="text-center mb-4">Quick Actions</h3>
+        <div class="row g-3 justify-content-center">
+            <div class="col-md-3">
+                <a href="{% url 'frontend:products' %}?action=create" class="btn btn-success w-100">
+                    <i class="fas fa-plus"></i> Sell Product
+                </a>
+            </div>
+            <div class="col-md-3">
+                <a href="{% url 'frontend:pest_detection' %}" class="btn btn-warning w-100">
+                    <i class="fas fa-camera"></i> Check Crop Health
+                </a>
+            </div>
+            <div class="col-md-3">
+                <a href="{% url 'frontend:market_prices' %}" class="btn btn-info w-100">
+                    <i class="fas fa-search"></i> Check Prices
+                </a>
+            </div>
+            <div class="col-md-3">
+                <a href="{% url 'frontend:community' %}" class="btn btn-secondary w-100">
+                    <i class="fas fa-question-circle"></i> Ask Question
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Statistics Section -->
+<section class="py-5">
+    <div class="container">
+        <h3 class="text-center mb-4">App Statistics</h3>
+        <div class="row g-4 text-center">
+            <div class="col-md-3">
+                <div class="card">
+                    <div class="card-body">
+                        <h4 class="text-primary">{{ total_products|default:"0" }}</h4>
+                        <p class="mb-0">Products Listed</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card">
+                    <div class="card-body">
+                        <h4 class="text-success">{{ total_users|default:"0" }}</h4>
+                        <p class="mb-0">Active Farmers</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card">
+                    <div class="card-body">
+                        <h4 class="text-warning">{{ total_diagnoses|default:"0" }}</h4>
+                        <p class="mb-0">Pest Diagnoses</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card">
+                    <div class="card-body">
+                        <h4 class="text-info">{{ total_posts|default:"0" }}</h4>
+                        <p class="mb-0">Community Posts</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Offline Features Section -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-6">
+                <h3>Works Offline Too!</h3>
+                <p class="lead">
+                    Access critical information even when you're offline. Weather data, 
+                    market prices, and pest information are cached for offline use.
+                </p>
+                <ul class="list-unstyled">
+                    <li><i class="fas fa-check text-success me-2"></i> Cached weather forecasts</li>
+                    <li><i class="fas fa-check text-success me-2"></i> Saved market prices</li>
+                    <li><i class="fas fa-check text-success me-2"></i> Pest diagnosis history</li>
+                    <li><i class="fas fa-check text-success me-2"></i> Offline newsletters</li>
+                </ul>
+            </div>
+            <div class="col-md-6 text-center">
+                <div class="feature-icon">
+                    <i class="fas fa-wifi-slash"></i>
+                </div>
+                <p class="text-muted">Data syncs automatically when you're back online</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Language Support Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-6 text-center">
+                <div class="feature-icon">
+                    <i class="fas fa-language"></i>
+                </div>
+                <p class="text-muted">Available in English and Chichewa</p>
+            </div>
+            <div class="col-md-6">
+                <h3>Multilingual Support</h3>
+                <p class="lead">
+                    The app is available in both English and Chichewa to ensure 
+                    accessibility for all farmers in Malawi.
+                </p>
+                <p>
+                    Switch between languages anytime using the language switcher 
+                    in the top right corner of the screen.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+

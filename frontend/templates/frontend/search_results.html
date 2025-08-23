@@ -1,0 +1,422 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Search Results - Mlimi App{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Search Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 bg-light">
+                <div class="card-body">
+                    <form method="get" action="{% url 'frontend:search' %}" class="row g-3">
+                        <div class="col-md-8">
+                            <div class="input-group input-group-lg">
+                                <input type="text" 
+                                       class="form-control" 
+                                       name="q" 
+                                       value="{{ request.GET.q }}" 
+                                       placeholder="Search for products, prices, news, or community posts..."
+                                       required>
+                                <button class="btn btn-primary" type="submit">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <select name="type" class="form-select form-select-lg">
+                                <option value="">All Types</option>
+                                <option value="products" {% if request.GET.type == 'products' %}selected{% endif %}>Products</option>
+                                <option value="prices" {% if request.GET.type == 'prices' %}selected{% endif %}>Market Prices</option>
+                                <option value="news" {% if request.GET.type == 'news' %}selected{% endif %}>Newsletters</option>
+                                <option value="community" {% if request.GET.type == 'community' %}selected{% endif %}>Community</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search Results Summary -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <h4 class="mb-0">
+                    <i class="fas fa-search me-2"></i>
+                    Search Results
+                </h4>
+                <div class="text-muted">
+                    {% if results %}
+                        Found {{ results|length }} result{{ results|length|pluralize }} for "{{ request.GET.q }}"
+                    {% else %}
+                        No results found for "{{ request.GET.q }}"
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if results %}
+        <!-- Results Tabs -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <ul class="nav nav-tabs" id="searchTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="all-tab" data-bs-toggle="tab" data-bs-target="#all" type="button" role="tab">
+                            <i class="fas fa-th-large me-2"></i>All Results
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="products-tab" data-bs-toggle="tab" data-bs-target="#products" type="button" role="tab">
+                            <i class="fas fa-shopping-cart me-2"></i>Products
+                            <span class="badge bg-primary ms-1">{{ products_count|default:0 }}</span>
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="prices-tab" data-bs-toggle="tab" data-bs-target="#prices" type="button" role="tab">
+                            <i class="fas fa-chart-line me-2"></i>Prices
+                            <span class="badge bg-info ms-1">{{ prices_count|default:0 }}</span>
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="news-tab" data-bs-toggle="tab" data-bs-target="#news" type="button" role="tab">
+                            <i class="fas fa-newspaper me-2"></i>News
+                            <span class="badge bg-success ms-1">{{ news_count|default:0 }}</span>
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="community-tab" data-bs-toggle="tab" data-bs-target="#community" type="button" role="tab">
+                            <i class="fas fa-users me-2"></i>Community
+                            <span class="badge bg-warning ms-1">{{ community_count|default:0 }}</span>
+                        </button>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Tab Content -->
+        <div class="tab-content" id="searchTabContent">
+            <!-- All Results Tab -->
+            <div class="tab-pane fade show active" id="all" role="tabpanel">
+                <div class="row">
+                    {% for result in results %}
+                        <div class="col-md-6 col-lg-4 mb-4">
+                            <div class="card h-100 border-0 shadow-sm">
+                                <div class="card-body">
+                                    <div class="d-flex align-items-start mb-3">
+                                        <div class="flex-shrink-0 me-3">
+                                            {% if result.type == 'product' %}
+                                                <i class="fas fa-shopping-cart text-success fa-2x"></i>
+                                            {% elif result.type == 'price' %}
+                                                <i class="fas fa-chart-line text-info fa-2x"></i>
+                                            {% elif result.type == 'news' %}
+                                                <i class="fas fa-newspaper text-primary fa-2x"></i>
+                                            {% elif result.type == 'community' %}
+                                                <i class="fas fa-users text-warning fa-2x"></i>
+                                            {% endif %}
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <h6 class="card-title mb-1">
+                                                <a href="{{ result.url }}" class="text-decoration-none">
+                                                    {{ result.title|truncatechars:50 }}
+                                                </a>
+                                            </h6>
+                                            <small class="text-muted">
+                                                {{ result.type|title }} • {{ result.date|date:"M d, Y" }}
+                                            </small>
+                                        </div>
+                                    </div>
+                                    <p class="card-text small text-muted">
+                                        {{ result.description|truncatechars:100 }}
+                                    </p>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="badge bg-light text-dark">{{ result.type|title }}</span>
+                                        <a href="{{ result.url }}" class="btn btn-sm btn-outline-primary">
+                                            View Details
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Products Tab -->
+            <div class="tab-pane fade" id="products" role="tabpanel">
+                <div class="row">
+                    {% for product in products %}
+                        <div class="col-md-6 col-lg-4 mb-4">
+                            <div class="card h-100 border-0 shadow-sm">
+                                {% if product.images.first %}
+                                    <img src="{{ product.images.first.image.url }}" 
+                                         class="card-img-top" 
+                                         alt="{{ product.name }}"
+                                         style="height: 200px; object-fit: cover;">
+                                {% else %}
+                                    <div class="card-img-top bg-light d-flex align-items-center justify-content-center" 
+                                         style="height: 200px;">
+                                        <i class="fas fa-image text-muted fa-3x"></i>
+                                    </div>
+                                {% endif %}
+                                <div class="card-body">
+                                    <h6 class="card-title">{{ product.name }}</h6>
+                                    <p class="card-text small text-muted">{{ product.description|truncatechars:100 }}</p>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="text-success fw-bold">{{ product.currency }} {{ product.price }}</span>
+                                        <a href="{% url 'frontend:product_detail' product.id %}" class="btn btn-sm btn-primary">
+                                            View Details
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% empty %}
+                        <div class="col-12">
+                            <div class="text-center py-5">
+                                <i class="fas fa-search text-muted fa-3x mb-3"></i>
+                                <h5 class="text-muted">No products found</h5>
+                                <p class="text-muted">Try adjusting your search terms or browse all products</p>
+                                <a href="{% url 'frontend:products' %}" class="btn btn-primary">
+                                    Browse All Products
+                                </a>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Prices Tab -->
+            <div class="tab-pane fade" id="prices" role="tabpanel">
+                <div class="row">
+                    {% for price in prices %}
+                        <div class="col-md-6 col-lg-4 mb-4">
+                            <div class="card h-100 border-0 shadow-sm">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start mb-3">
+                                        <h6 class="card-title mb-0">{{ price.product_category }}</h6>
+                                        <span class="badge {% if price.is_buying %}bg-success{% else %}bg-warning{% endif %}">
+                                            {{ price.is_buying|yesno:"Buying,Selling" }}
+                                        </span>
+                                    </div>
+                                    <p class="card-text">
+                                        <strong>{{ price.currency }} {{ price.price_per_unit }}</strong> per {{ price.unit }}
+                                    </p>
+                                    <div class="small text-muted">
+                                        <div><i class="fas fa-map-marker-alt me-2"></i>{{ price.location }}</div>
+                                        <div><i class="fas fa-store me-2"></i>{{ price.market_name }}</div>
+                                        <div><i class="fas fa-calendar me-2"></i>{{ price.recorded_at|date:"M d, Y" }}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% empty %}
+                        <div class="col-12">
+                            <div class="text-center py-5">
+                                <i class="fas fa-chart-line text-muted fa-3x mb-3"></i>
+                                <h5 class="text-muted">No price data found</h5>
+                                <p class="text-muted">Try adjusting your search terms or browse all market prices</p>
+                                <a href="{% url 'frontend:market_prices' %}" class="btn btn-primary">
+                                    View All Prices
+                                </a>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- News Tab -->
+            <div class="tab-pane fade" id="news" role="tabpanel">
+                <div class="row">
+                    {% for newsletter in news %}
+                        <div class="col-md-6 col-lg-4 mb-4">
+                            <div class="card h-100 border-0 shadow-sm">
+                                <div class="card-body">
+                                    <h6 class="card-title">{{ newsletter.title }}</h6>
+                                    <p class="card-text small text-muted">{{ newsletter.content|truncatechars:100 }}</p>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="badge bg-light text-dark">{{ newsletter.category }}</span>
+                                        <small class="text-muted">{{ newsletter.published_at|date:"M d, Y" }}</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% empty %}
+                        <div class="col-12">
+                            <div class="text-center py-5">
+                                <i class="fas fa-newspaper text-muted fa-3x mb-3"></i>
+                                <h5 class="text-muted">No newsletters found</h5>
+                                <p class="text-muted">Try adjusting your search terms or browse all newsletters</p>
+                                <a href="{% url 'frontend:newsletters' %}" class="btn btn-primary">
+                                    Browse Newsletters
+                                </a>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Community Tab -->
+            <div class="tab-pane fade" id="community" role="tabpanel">
+                <div class="row">
+                    {% for post in community %}
+                        <div class="col-md-6 col-lg-4 mb-4">
+                            <div class="card h-100 border-0 shadow-sm">
+                                <div class="card-body">
+                                    <div class="d-flex align-items-start mb-3">
+                                        <div class="flex-shrink-0 me-3">
+                                            <i class="fas fa-user-circle text-primary fa-2x"></i>
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <h6 class="card-title mb-1">{{ post.title }}</h6>
+                                            <small class="text-muted">
+                                                By {{ post.author.username }} • {{ post.created_at|date:"M d, Y" }}
+                                            </small>
+                                        </div>
+                                    </div>
+                                    <p class="card-text small text-muted">{{ post.content|truncatechars:100 }}</p>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="badge bg-light text-dark">{{ post.category }}</span>
+                                        <div class="small text-muted">
+                                            <i class="fas fa-comment me-1"></i>{{ post.replies.count }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% empty %}
+                        <div class="col-12">
+                            <div class="text-center py-5">
+                                <i class="fas fa-users text-muted fa-3x mb-3"></i>
+                                <h5 class="text-muted">No community posts found</h5>
+                                <p class="text-muted">Try adjusting your search terms or browse all community posts</p>
+                                <a href="{% url 'frontend:community' %}" class="btn btn-primary">
+                                    Browse Community
+                                </a>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <!-- No Results -->
+        <div class="row">
+            <div class="col-12">
+                <div class="text-center py-5">
+                    <i class="fas fa-search text-muted fa-5x mb-4"></i>
+                    <h3 class="text-muted mb-3">No Results Found</h3>
+                    <p class="text-muted mb-4">
+                        We couldn't find any results for "{{ request.GET.q }}". 
+                        Try adjusting your search terms or browse our content.
+                    </p>
+                    <div class="row justify-content-center">
+                        <div class="col-md-8">
+                            <div class="row g-3">
+                                <div class="col-md-3">
+                                    <a href="{% url 'frontend:products' %}" class="btn btn-outline-primary w-100">
+                                        <i class="fas fa-shopping-cart me-2"></i>Products
+                                    </a>
+                                </div>
+                                <div class="col-md-3">
+                                    <a href="{% url 'frontend:market_prices' %}" class="btn btn-outline-info w-100">
+                                        <i class="fas fa-chart-line me-2"></i>Prices
+                                    </a>
+                                </div>
+                                <div class="col-md-3">
+                                    <a href="{% url 'frontend:newsletters' %}" class="btn btn-outline-success w-100">
+                                        <i class="fas fa-newspaper me-2"></i>News
+                                    </a>
+                                </div>
+                                <div class="col-md-3">
+                                    <a href="{% url 'frontend:community' %}" class="btn btn-outline-warning w-100">
+                                        <i class="fas fa-users me-2"></i>Community
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Search Tips -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <div class="card border-0 bg-light">
+                <div class="card-body">
+                    <h6 class="card-title text-primary">
+                        <i class="fas fa-lightbulb me-2"></i>
+                        Search Tips
+                    </h6>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <ul class="list-unstyled small">
+                                <li class="mb-2">
+                                    <i class="fas fa-check text-success me-2"></i>
+                                    Use specific keywords for better results
+                                </li>
+                                <li class="mb-2">
+                                    <i class="fas fa-check text-success me-2"></i>
+                                    Try different search terms if no results
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <ul class="list-unstyled small">
+                                <li class="mb-2">
+                                    <i class="fas fa-check text-success me-2"></i>
+                                    Filter by content type for focused results
+                                </li>
+                                <li class="mb-2">
+                                    <i class="fas fa-check text-success me-2"></i>
+                                    Check spelling and try synonyms
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle tab switching
+    const tabButtons = document.querySelectorAll('[data-bs-toggle="tab"]');
+    tabButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            const target = this.getAttribute('data-bs-target');
+            const tab = new bootstrap.Tab(this);
+            tab.show();
+        });
+    });
+
+    // Auto-focus search input
+    const searchInput = document.querySelector('input[name="q"]');
+    if (searchInput) {
+        searchInput.focus();
+    }
+
+    // Handle search form submission
+    const searchForm = document.querySelector('form[action*="search"]');
+    if (searchForm) {
+        searchForm.addEventListener('submit', function(e) {
+            const query = this.querySelector('input[name="q"]').value.trim();
+            if (!query) {
+                e.preventDefault();
+                alert('Please enter a search term');
+                return false;
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

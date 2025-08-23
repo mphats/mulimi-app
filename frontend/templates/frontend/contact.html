@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Contact Us - Mlimi App{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-12 text-center mb-5">
+            <h1 class="display-4 text-primary">Contact Us</h1>
+            <p class="lead text-muted">Get in touch with our support team</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-envelope me-2"></i>Send us a Message</h5>
+                </div>
+                <div class="card-body p-4">
+                    <form method="post" id="contactForm">
+                        {% csrf_token %}
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="name" class="form-label">Full Name</label>
+                                <input type="text" class="form-control" id="name" name="name" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="email" class="form-label">Email Address</label>
+                                <input type="email" class="form-control" id="email" name="email" required>
+                            </div>
+                            <div class="col-12">
+                                <label for="subject" class="form-label">Subject</label>
+                                <input type="text" class="form-control" id="subject" name="subject" required>
+                            </div>
+                            <div class="col-12">
+                                <label for="message" class="form-label">Message</label>
+                                <textarea class="form-control" id="message" name="message" rows="5" required></textarea>
+                            </div>
+                            <div class="col-12">
+                                <button type="submit" class="btn btn-primary btn-lg">
+                                    <i class="fas fa-paper-plane me-2"></i>Send Message
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body">
+                    <h5 class="card-title text-primary">
+                        <i class="fas fa-map-marker-alt me-2"></i>Our Location
+                    </h5>
+                    <p class="card-text">
+                        Lilongwe, Malawi<br>
+                        Agricultural Technology Hub
+                    </p>
+                </div>
+            </div>
+
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body">
+                    <h5 class="card-title text-primary">
+                        <i class="fas fa-phone me-2"></i>Phone
+                    </h5>
+                    <p class="card-text">
+                        +265 123 456 789<br>
+                        +265 987 654 321
+                    </p>
+                </div>
+            </div>
+
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title text-primary">
+                        <i class="fas fa-envelope me-2"></i>Email
+                    </h5>
+                    <p class="card-text">
+                        support@mlimiapp.mw<br>
+                        info@mlimiapp.mw
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,201 @@
+{% extends 'base.html' %}
+
+{% block title %}Weather - Mlimi App{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h1><i class="fas fa-cloud-sun"></i> Weather Forecast</h1>
+        <p class="text-muted">Access daily weather forecasts and receive alerts for critical weather conditions</p>
+    </div>
+</div>
+
+<!-- Location and Days Selection -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="GET" class="row g-3">
+            <div class="col-md-4">
+                <label for="location" class="form-label">Location</label>
+                <select name="location" id="location" class="form-select" onchange="this.form.submit()">
+                    {% for loc in locations %}
+                        <option value="{{ loc }}" {% if loc == current_location %}selected{% endif %}>
+                            {{ loc }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label for="days" class="form-label">Forecast Days</label>
+                <select name="days" id="days" class="form-select" onchange="this.form.submit()">
+                    <option value="3" {% if forecast_days == 3 %}selected{% endif %}>3 Days</option>
+                    <option value="5" {% if forecast_days == 5 %}selected{% endif %}>5 Days</option>
+                    <option value="7" {% if forecast_days == 7 %}selected{% endif %}>7 Days</option>
+                    <option value="10" {% if forecast_days == 10 %}selected{% endif %}>10 Days</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">&nbsp;</label>
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-sync-alt"></i> Update Forecast
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Weather Forecast Cards -->
+{% if weather_data %}
+    <div class="row g-4 mb-4">
+        {% for weather in weather_data %}
+        <div class="col-md-6 col-lg-3">
+            <div class="card h-100 weather-card {% if weather.is_alert %}border-warning{% endif %}">
+                <div class="card-header text-center {% if weather.is_alert %}bg-warning text-dark{% endif %}">
+                    <h6 class="mb-0">
+                        {% if weather.is_alert %}
+                            <i class="fas fa-exclamation-triangle"></i>
+                        {% endif %}
+                        {{ weather.forecast_date|date:"D, M d" }}
+                    </h6>
+                </div>
+                <div class="card-body text-center">
+                    <div class="weather-icon mb-3">
+                        {% if weather.description|lower == 'sunny' or weather.description|lower == 'clear' %}
+                            <i class="fas fa-sun text-warning" style="font-size: 2.5rem;"></i>
+                        {% elif weather.description|lower == 'cloudy' or weather.description|lower == 'partly cloudy' %}
+                            <i class="fas fa-cloud text-secondary" style="font-size: 2.5rem;"></i>
+                        {% elif weather.description|lower == 'rainy' or weather.description|lower == 'rain' %}
+                            <i class="fas fa-cloud-rain text-info" style="font-size: 2.5rem;"></i>
+                        {% elif weather.description|lower == 'stormy' or weather.description|lower == 'thunderstorm' %}
+                            <i class="fas fa-bolt text-warning" style="font-size: 2.5rem;"></i>
+                        {% else %}
+                            <i class="fas fa-cloud-sun text-primary" style="font-size: 2.5rem;"></i>
+                        {% endif %}
+                    </div>
+                    
+                    <h4 class="text-primary mb-2">{{ weather.temperature|floatformat:1 }}°C</h4>
+                    <p class="text-muted mb-2">{{ weather.description|title }}</p>
+                    
+                    <div class="weather-details">
+                        <div class="row text-center">
+                            <div class="col-6">
+                                <small class="text-muted">Humidity</small>
+                                <div><i class="fas fa-tint text-info"></i> {{ weather.humidity }}%</div>
+                            </div>
+                            <div class="col-6">
+                                <small class="text-muted">Wind</small>
+                                <div><i class="fas fa-wind text-secondary"></i> {{ weather.wind_speed }} km/h</div>
+                            </div>
+                        </div>
+                        
+                        {% if weather.precipitation > 0 %}
+                        <div class="mt-2">
+                            <small class="text-muted">Precipitation</small>
+                            <div><i class="fas fa-cloud-rain text-info"></i> {{ weather.precipitation }} mm</div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                {% if weather.is_alert %}
+                <div class="card-footer bg-warning text-dark text-center">
+                    <i class="fas fa-exclamation-triangle"></i> Weather Alert
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="text-center py-5">
+        <i class="fas fa-cloud-sun text-muted" style="font-size: 4rem;"></i>
+        <h4 class="mt-3 text-muted">No weather data available</h4>
+        <p class="text-muted">Please select a location to view weather forecasts.</p>
+    </div>
+{% endif %}
+
+<!-- Weather Alerts Section -->
+{% if weather_data %}
+    {% for weather in weather_data %}
+        {% if weather.is_alert %}
+        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+            <h6 class="alert-heading">
+                <i class="fas fa-exclamation-triangle"></i> Weather Alert for {{ weather.forecast_date|date:"F d, Y" }}
+            </h6>
+            <p class="mb-0">
+                <strong>{{ current_location }}:</strong> {{ weather.description }}. 
+                Temperature: {{ weather.temperature|floatformat:1 }}°C, 
+                Humidity: {{ weather.humidity }}%, 
+                Wind: {{ weather.wind_speed }} km/h
+            </p>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endif %}
+    {% endfor %}
+{% endif %}
+
+<!-- Farming Weather Tips -->
+<div class="card mt-4">
+    <div class="card-header">
+        <h5 class="mb-0"><i class="fas fa-lightbulb"></i> Farming Weather Tips</h5>
+    </div>
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-6">
+                <h6><i class="fas fa-seedling text-success"></i> Planting Tips</h6>
+                <ul class="list-unstyled">
+                    <li><i class="fas fa-check text-success me-2"></i> Plant during moderate temperatures</li>
+                    <li><i class="fas fa-check text-success me-2"></i> Avoid planting before heavy rain</li>
+                    <li><i class="fas fa-check text-success me-2"></i> Monitor soil moisture levels</li>
+                    <li><i class="fas fa-check text-success me-2"></i> Consider wind protection for young plants</li>
+                </ul>
+            </div>
+            <div class="col-md-6">
+                <h6><i class="fas fa-shield-alt text-warning"></i> Weather Protection</h6>
+                <ul class="list-unstyled">
+                    <li><i class="fas fa-check text-success me-2"></i> Cover crops during frost warnings</li>
+                    <li><i class="fas fa-check text-success me-2"></i> Secure structures before storms</li>
+                    <li><i class="fas fa-check text-success me-2"></i> Harvest before severe weather</li>
+                    <li><i class="fas fa-check text-success me-2"></i> Store produce in dry conditions</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Offline Weather Data -->
+<div class="card mt-4">
+    <div class="card-header">
+        <h5 class="mb-0"><i class="fas fa-wifi-slash"></i> Offline Access</h5>
+    </div>
+    <div class="card-body">
+        <p class="mb-0">
+            <i class="fas fa-info-circle text-info"></i>
+            Weather data is cached for offline access. When you're back online, 
+            the latest forecasts will automatically update.
+        </p>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .weather-card {
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    
+    .weather-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    }
+    
+    .weather-icon {
+        min-height: 3rem;
+    }
+    
+    .weather-details {
+        font-size: 0.9rem;
+    }
+</style>
+{% endblock %}

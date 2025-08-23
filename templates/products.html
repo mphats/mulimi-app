@@ -1,0 +1,231 @@
+{% extends 'base.html' %}
+
+{% block title %}Products - Mlimi App{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h1><i class="fas fa-shopping-cart"></i> Agricultural Products</h1>
+        <p class="text-muted">Buy and sell agricultural products directly with other farmers</p>
+    </div>
+    <div class="col-md-4 text-end">
+        {% if user.is_authenticated %}
+            <a href="?action=create" class="btn btn-success">
+                <i class="fas fa-plus"></i> List Your Product
+            </a>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Filters and Search -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="GET" class="row g-3">
+            <div class="col-md-3">
+                <label for="category" class="form-label">Category</label>
+                <select name="category" id="category" class="form-select">
+                    <option value="">All Categories</option>
+                    {% for value, label in categories %}
+                        <option value="{{ value }}" {% if request.GET.category == value %}selected{% endif %}>
+                            {{ label }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="location" class="form-label">Location</label>
+                <input type="text" name="location" id="location" class="form-control" 
+                       placeholder="Enter location" value="{{ request.GET.location }}">
+            </div>
+            <div class="col-md-4">
+                <label for="search" class="form-label">Search</label>
+                <input type="text" name="search" id="search" class="form-control" 
+                       placeholder="Search products..." value="{{ request.GET.search }}">
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">&nbsp;</label>
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-search"></i> Filter
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Product Creation Form -->
+{% if show_create_form and user.is_authenticated %}
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="mb-0"><i class="fas fa-plus"></i> List Your Product</h5>
+    </div>
+    <div class="card-body">
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label for="name" class="form-label">Product Name *</label>
+                    <input type="text" name="name" id="name" class="form-control" required>
+                </div>
+                <div class="col-md-6">
+                    <label for="category" class="form-label">Category *</label>
+                    <select name="category" id="category" class="form-select" required>
+                        <option value="">Select Category</option>
+                        {% for value, label in categories %}
+                            <option value="{{ value }}">{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-12">
+                    <label for="description" class="form-label">Description *</label>
+                    <textarea name="description" id="description" class="form-control" rows="3" required></textarea>
+                </div>
+                <div class="col-md-4">
+                    <label for="quantity" class="form-label">Quantity *</label>
+                    <input type="number" name="quantity" id="quantity" class="form-control" step="0.01" required>
+                </div>
+                <div class="col-md-4">
+                    <label for="unit" class="form-label">Unit *</label>
+                    <input type="text" name="unit" id="unit" class="form-control" placeholder="kg, pieces, etc." required>
+                </div>
+                <div class="col-md-4">
+                    <label for="price_per_unit" class="form-label">Price per Unit (MWK) *</label>
+                    <input type="number" name="price_per_unit" id="price_per_unit" class="form-control" step="0.01" required>
+                </div>
+                <div class="col-md-6">
+                    <label for="harvest_date" class="form-label">Harvest Date *</label>
+                    <input type="date" name="harvest_date" id="harvest_date" class="form-control" required>
+                </div>
+                <div class="col-md-6">
+                    <label for="location" class="form-label">Location *</label>
+                    <input type="text" name="location" id="location" class="form-control" required>
+                </div>
+                <div class="col-md-6">
+                    <label for="contact_phone" class="form-label">Contact Phone *</label>
+                    <input type="tel" name="contact_phone" id="contact_phone" class="form-control" required>
+                </div>
+                <div class="col-md-6">
+                    <label for="images" class="form-label">Product Images</label>
+                    <input type="file" name="images" id="images" class="form-control" multiple accept="image/*">
+                </div>
+                <div class="col-12">
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-save"></i> List Product
+                    </button>
+                    <a href="{% url 'products' %}" class="btn btn-secondary">
+                        <i class="fas fa-times"></i> Cancel
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endif %}
+
+<!-- Products Grid -->
+{% if products %}
+    <div class="row g-4">
+        {% for product in products %}
+        <div class="col-md-4 col-lg-3">
+            <div class="card h-100 product-card">
+                {% if product.images.first %}
+                    <img src="{{ product.images.first.image.url }}" class="card-img-top" alt="{{ product.name }}" style="height: 200px; object-fit: cover;">
+                {% else %}
+                    <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
+                        <i class="fas fa-image text-muted" style="font-size: 3rem;"></i>
+                    </div>
+                {% endif %}
+                <div class="card-body">
+                    <h6 class="card-title">{{ product.name }}</h6>
+                    <p class="card-text text-muted small">{{ product.description|truncatewords:10 }}</p>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="badge bg-primary">{{ product.get_category_display }}</span>
+                        <small class="text-muted">{{ product.location }}</small>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <strong class="text-success">MWK {{ product.price_per_unit }}</strong>
+                        <small class="text-muted">{{ product.quantity }} {{ product.unit }}</small>
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <small class="text-muted">By {{ product.seller.username }}</small>
+                        <a href="{% url 'product_detail' product.id %}" class="btn btn-sm btn-outline-primary">
+                            View Details
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if products.has_other_pages %}
+    <nav aria-label="Products pagination" class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% if products.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ products.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                        <i class="fas fa-chevron-left"></i> Previous
+                    </a>
+                </li>
+            {% endif %}
+
+            {% for num in products.paginator.page_range %}
+                {% if products.number == num %}
+                    <li class="page-item active">
+                        <span class="page-link">{{ num }}</span>
+                    </li>
+                {% elif num > products.number|add:'-3' and num < products.number|add:'3' %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ num }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{ num }}</a>
+                    </li>
+                {% endif %}
+            {% endfor %}
+
+            {% if products.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ products.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                        Next <i class="fas fa-chevron-right"></i>
+                    </a>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+
+{% else %}
+    <div class="text-center py-5">
+        <i class="fas fa-shopping-cart text-muted" style="font-size: 4rem;"></i>
+        <h4 class="mt-3 text-muted">No products found</h4>
+        <p class="text-muted">Try adjusting your filters or be the first to list a product!</p>
+        {% if user.is_authenticated %}
+            <a href="?action=create" class="btn btn-success">
+                <i class="fas fa-plus"></i> List Your First Product
+            </a>
+        {% endif %}
+    </div>
+{% endif %}
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .product-card {
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    
+    .product-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    }
+    
+    .card-img-top {
+        border-top-left-radius: 0.5rem;
+        border-top-right-radius: 0.5rem;
+    }
+</style>
+{% endblock %}
+
+

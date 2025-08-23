@@ -1,0 +1,341 @@
+{% extends 'base.html' %}
+
+{% block title %}Register - Mlimi App{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card shadow">
+            <div class="card-header text-center bg-success text-white">
+                <h4 class="mb-0"><i class="fas fa-user-plus"></i> Join Mlimi App</h4>
+                <p class="mb-0">Create your account and start your farming journey</p>
+            </div>
+            <div class="card-body p-4">
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+                
+                <form method="POST" id="registerForm">
+                    {% csrf_token %}
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="first_name" class="form-label">First Name *</label>
+                            <input type="text" name="first_name" id="first_name" class="form-control" 
+                                   placeholder="Enter your first name" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="last_name" class="form-label">Last Name *</label>
+                            <input type="text" name="last_name" id="last_name" class="form-control" 
+                                   placeholder="Enter your last name" required>
+                        </div>
+                        
+                        <div class="col-12">
+                            <label for="username" class="form-label">Username *</label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="fas fa-at"></i>
+                                </span>
+                                <input type="text" name="username" id="username" class="form-control" 
+                                       placeholder="Choose a unique username" required>
+                            </div>
+                            <div class="form-text">
+                                <i class="fas fa-info-circle"></i> 
+                                Username must be 3-30 characters, letters, numbers, and underscores only
+                            </div>
+                        </div>
+                        
+                        <div class="col-12">
+                            <label for="email" class="form-label">Email Address *</label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="fas fa-envelope"></i>
+                                </span>
+                                <input type="email" name="email" id="email" class="form-control" 
+                                       placeholder="Enter your email address" required>
+                            </div>
+                            <div class="form-text">
+                                <i class="fas fa-info-circle"></i> 
+                                We'll send a verification link to this email
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label for="role" class="form-label">Role *</label>
+                            <select name="role" id="role" class="form-select" required>
+                                <option value="">Select your role</option>
+                                <option value="FARMER">Farmer</option>
+                                <option value="AGRONOMIST">Agronomist</option>
+                                <option value="TRADER">Trader</option>
+                                <option value="ADMIN">Administrator</option>
+                            </select>
+                            <div class="form-text">
+                                <i class="fas fa-info-circle"></i> 
+                                Your role determines access to certain features
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label for="phone" class="form-label">Phone Number</label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="fas fa-phone"></i>
+                                </span>
+                                <input type="tel" name="phone" id="phone" class="form-control" 
+                                       placeholder="Enter phone number (optional)">
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label for="password1" class="form-label">Password *</label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="fas fa-lock"></i>
+                                </span>
+                                <input type="password" name="password1" id="password1" class="form-control" 
+                                       placeholder="Create a strong password" required>
+                                <button class="btn btn-outline-secondary" type="button" id="togglePassword1">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                            <div class="form-text">
+                                <i class="fas fa-info-circle"></i> 
+                                Password must be at least 8 characters long
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label for="password2" class="form-label">Confirm Password *</label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="fas fa-lock"></i>
+                                </span>
+                                <input type="password" name="password2" id="password2" class="form-control" 
+                                       placeholder="Confirm your password" required>
+                                <button class="btn btn-outline-secondary" type="button" id="togglePassword2">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="col-12">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="terms" id="terms" required>
+                                <label class="form-check-label" for="terms">
+                                    I agree to the <a href="#" class="text-decoration-none">Terms of Service</a> and 
+                                    <a href="#" class="text-decoration-none">Privacy Policy</a> *
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="col-12">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="newsletter" id="newsletter">
+                                <label class="form-check-label" for="newsletter">
+                                    Subscribe to our newsletter for farming tips and updates
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="col-12">
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-success btn-lg" id="registerBtn">
+                                    <i class="fas fa-user-plus"></i> Create Account
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+                
+                <hr class="my-4">
+                
+                <div class="text-center">
+                    <p class="mb-2">Already have an account?</p>
+                    <a href="{% url 'frontend:login' %}" class="btn btn-outline-primary">
+                        <i class="fas fa-sign-in-alt"></i> Sign In
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Role Information -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="fas fa-info-circle"></i> About User Roles</h6>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-seedling text-success"></i> Farmer</h6>
+                        <p class="small text-muted mb-0">
+                            Access to all farming tools, market prices, weather forecasts, and community features.
+                        </p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-graduation-cap text-primary"></i> Agronomist</h6>
+                        <p class="small text-muted mb-0">
+                            Expert access to provide advice, moderate community discussions, and access advanced analytics.
+                        </p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-chart-line text-warning"></i> Trader</h6>
+                        <p class="small text-muted mb-0">
+                            Access to market data, product listings, and trading tools for agricultural commerce.
+                        </p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-cogs text-danger"></i> Administrator</h6>
+                        <p class="small text-muted mb-0">
+                            Full system access for managing users, content, and platform administration.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Features Preview -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="fas fa-star"></i> What You'll Get</h6>
+            </div>
+            <div class="card-body">
+                <div class="row g-2">
+                    <div class="col-6">
+                        <small class="text-muted">
+                            <i class="fas fa-check text-success me-1"></i> AI Pest Detection
+                        </small>
+                    </div>
+                    <div class="col-6">
+                        <small class="text-muted">
+                            <i class="fas fa-check text-success me-1"></i> Real-time Market Prices
+                        </small>
+                    </div>
+                    <div class="col-6">
+                        <small class="text-muted">
+                            <i class="fas fa-check text-success me-1"></i> Weather Forecasts
+                        </small>
+                    </div>
+                    <div class="col-6">
+                        <small class="text-muted">
+                            <i class="fas fa-check text-success me-1"></i> Community Forum
+                        </small>
+                    </div>
+                    <div class="col-6">
+                        <small class="text-muted">
+                            <i class="fas fa-check text-success me-1"></i> Farming Newsletters
+                        </small>
+                    </div>
+                    <div class="col-6">
+                        <small class="text-muted">
+                            <i class="fas fa-check text-success me-1"></i> Product Marketplace
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .card {
+        border: none;
+        border-radius: 15px;
+    }
+    
+    .card-header {
+        border-radius: 15px 15px 0 0 !important;
+        border: none;
+    }
+    
+    .form-control, .form-select, .btn {
+        border-radius: 10px;
+    }
+    
+    .input-group-text {
+        border-radius: 10px 0 0 10px;
+        border: none;
+        background-color: #f8f9fa;
+    }
+    
+    .btn-outline-secondary {
+        border-radius: 0 10px 10px 0;
+    }
+    
+    .alert {
+        border-radius: 10px;
+    }
+    
+    .form-check-input:checked {
+        background-color: #198754;
+        border-color: #198754;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const togglePassword1 = document.getElementById('togglePassword1');
+    const togglePassword2 = document.getElementById('togglePassword2');
+    const password1 = document.getElementById('password1');
+    const password2 = document.getElementById('password2');
+    const registerForm = document.getElementById('registerForm');
+    const registerBtn = document.getElementById('registerBtn');
+    
+    // Toggle password visibility
+    function togglePasswordVisibility(toggleBtn, passwordField) {
+        toggleBtn.addEventListener('click', function() {
+            const type = passwordField.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordField.setAttribute('type', type);
+            this.querySelector('i').classList.toggle('fa-eye');
+            this.querySelector('i').classList.toggle('fa-eye-slash');
+        });
+    }
+    
+    togglePasswordVisibility(togglePassword1, password1);
+    togglePasswordVisibility(togglePassword2, password2);
+    
+    // Password confirmation validation
+    password2.addEventListener('input', function() {
+        if (this.value !== password1.value) {
+            this.setCustomValidity('Passwords do not match');
+        } else {
+            this.setCustomValidity('');
+        }
+    });
+    
+    // Username validation
+    document.getElementById('username').addEventListener('input', function() {
+        const username = this.value;
+        const usernameRegex = /^[a-zA-Z0-9_]{3,30}$/;
+        
+        if (!usernameRegex.test(username)) {
+            this.setCustomValidity('Username must be 3-30 characters, letters, numbers, and underscores only');
+        } else {
+            this.setCustomValidity('');
+        }
+    });
+    
+    // Form submission
+    registerForm.addEventListener('submit', function(e) {
+        if (password1.value !== password2.value) {
+            e.preventDefault();
+            alert('Passwords do not match!');
+            return;
+        }
+        
+        registerBtn.disabled = true;
+        registerBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating Account...';
+    });
+    
+    // Auto-focus first name field
+    document.getElementById('first_name').focus();
+});
+</script>
+{% endblock %}

@@ -1,0 +1,234 @@
+{% extends 'base.html' %}
+
+{% block title %}Newsletters - Mlimi App{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h1><i class="fas fa-newspaper"></i> Farming Newsletters</h1>
+        <p class="text-muted">Expert farming tips, market trends, and seasonal advice to improve your agricultural practices</p>
+    </div>
+</div>
+
+<!-- Filters -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="GET" class="row g-3">
+            <div class="col-md-4">
+                <label for="language" class="form-label">Language</label>
+                <select name="language" id="language" class="form-select" onchange="this.form.submit()">
+                    {% for code, name in languages %}
+                        <option value="{{ code }}" {% if code == current_language %}selected{% endif %}>
+                            {{ name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label for="category" class="form-label">Category</label>
+                <select name="category" id="category" class="form-select" onchange="this.form.submit()">
+                    <option value="">All Categories</option>
+                    {% for category in categories %}
+                        <option value="{{ category }}" {% if request.GET.category == category %}selected{% endif %}>
+                            {{ category }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">&nbsp;</label>
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-filter"></i> Apply Filters
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Newsletters Grid -->
+{% if newsletters %}
+    <div class="row g-4">
+        {% for newsletter in newsletters %}
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 newsletter-card">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <h6 class="mb-0">{{ newsletter.title|truncatewords:8 }}</h6>
+                        <span class="badge bg-primary">{{ newsletter.category }}</span>
+                    </div>
+                    <small class="text-muted">
+                        <i class="fas fa-calendar"></i> {{ newsletter.published_at|date:"M d, Y" }}
+                    </small>
+                </div>
+                <div class="card-body">
+                    <p class="card-text text-muted">
+                        {{ newsletter.content|truncatewords:25 }}
+                    </p>
+                    
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="badge bg-secondary">
+                            {% if newsletter.language == 'EN' %}
+                                <i class="fas fa-language"></i> English
+                            {% else %}
+                                <i class="fas fa-language"></i> Chichewa
+                            {% endif %}
+                        </span>
+                        <a href="{% url 'newsletter_detail' newsletter.id %}" class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-book-open"></i> Read More
+                        </a>
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent">
+                    <small class="text-muted">
+                        <i class="fas fa-user"></i> By {{ newsletter.author|default:"Mlimi App Team" }}
+                    </small>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if newsletters.has_other_pages %}
+    <nav aria-label="Newsletters pagination" class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% if newsletters.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ newsletters.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                        <i class="fas fa-chevron-left"></i> Previous
+                    </a>
+                </li>
+            {% endif %}
+
+            {% for num in newsletters.paginator.page_range %}
+                {% if newsletters.number == num %}
+                    <li class="page-item active">
+                        <span class="page-link">{{ num }}</span>
+                    </li>
+                {% elif num > newsletters.number|add:'-3' and num < newsletters.number|add:'3' %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ num }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{ num }}</a>
+                    </li>
+                {% endif %}
+            {% endfor %}
+
+            {% if newsletters.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ newsletters.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                        Next <i class="fas fa-chevron-right"></i>
+                    </a>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+
+{% else %}
+    <div class="text-center py-5">
+        <i class="fas fa-newspaper text-muted" style="font-size: 4rem;"></i>
+        <h4 class="mt-3 text-muted">No newsletters found</h4>
+        <p class="text-muted">Try adjusting your filters or check back later for new content.</p>
+    </div>
+{% endif %}
+
+<!-- Newsletter Categories Info -->
+<div class="card mt-4">
+    <div class="card-header">
+        <h5 class="mb-0"><i class="fas fa-info-circle"></i> Newsletter Categories</h5>
+    </div>
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-6">
+                <h6><i class="fas fa-lightbulb text-warning"></i> Farming Tips</h6>
+                <p class="text-muted">
+                    Practical advice on crop management, soil health, pest control, and farming techniques 
+                    tailored for smallholder farmers in Malawi.
+                </p>
+            </div>
+            <div class="col-md-6">
+                <h6><i class="fas fa-chart-line text-success"></i> Market Trends</h6>
+                <p class="text-muted">
+                    Analysis of agricultural market conditions, price trends, and opportunities 
+                    to help you make informed decisions about what and when to plant.
+                </p>
+            </div>
+            <div class="col-md-6">
+                <h6><i class="fas fa-calendar-alt text-primary"></i> Seasonal Advice</h6>
+                <p class="text-muted">
+                    Timely guidance based on Malawi's growing seasons, weather patterns, 
+                    and optimal timing for various agricultural activities.
+                </p>
+            </div>
+            <div class="col-md-6">
+                <h6><i class="fas fa-cogs text-info"></i> Technology & Innovation</h6>
+                <p class="text-muted">
+                    Information about new farming technologies, sustainable practices, 
+                    and innovative solutions to improve agricultural productivity.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Language Support -->
+<div class="card mt-4">
+    <div class="card-header">
+        <h5 class="mb-0"><i class="fas fa-language"></i> Multilingual Support</h5>
+    </div>
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-6">
+                <h6><i class="fas fa-flag text-primary"></i> English</h6>
+                <p class="text-muted">
+                    Comprehensive farming information in English for farmers who prefer 
+                    international agricultural terminology and detailed explanations.
+                </p>
+            </div>
+            <div class="col-md-6">
+                <h6><i class="fas fa-flag text-success"></i> Chichewa</h6>
+                <p class="text-muted">
+                    Local language content that connects with traditional farming knowledge 
+                    and makes agricultural information accessible to all Malawian farmers.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Offline Access -->
+<div class="card mt-4">
+    <div class="card-header">
+        <h5 class="mb-0"><i class="fas fa-wifi-slash"></i> Offline Access</h5>
+    </div>
+    <div class="card-body">
+        <p class="mb-0">
+            <i class="fas fa-info-circle text-info"></i>
+            Newsletters are automatically downloaded for offline reading. When you're back online, 
+            new content will be available for download.
+        </p>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .newsletter-card {
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    
+    .newsletter-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    }
+    
+    .card-header {
+        min-height: 4rem;
+    }
+    
+    .card-body {
+        min-height: 8rem;
+    }
+</style>
+{% endblock %}

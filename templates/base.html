@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Mlimi App - Agricultural Assistant{% endblock %}</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <style>
+        :root {
+            --primary-color: #28a745;
+            --secondary-color: #6c757d;
+            --success-color: #198754;
+            --warning-color: #ffc107;
+            --danger-color: #dc3545;
+            --light-color: #f8f9fa;
+            --dark-color: #212529;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--light-color);
+        }
+        
+        .navbar-brand {
+            font-weight: bold;
+            color: var(--primary-color) !important;
+        }
+        
+        .card {
+            border: none;
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+            border-radius: 0.5rem;
+        }
+        
+        .card-header {
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: 0.5rem 0.5rem 0 0 !important;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--success-color);
+            border-color: var(--success-color);
+        }
+        
+        .feature-icon {
+            font-size: 2rem;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+        
+        .hero-section {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--success-color) 100%);
+            color: white;
+            padding: 4rem 0;
+        }
+        
+        .footer {
+            background-color: var(--dark-color);
+            color: white;
+            padding: 2rem 0;
+            margin-top: 3rem;
+        }
+        
+        .language-switcher {
+            position: fixed;
+            top: 100px;
+            right: 20px;
+            z-index: 1000;
+        }
+        
+        .offline-indicator {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background-color: var(--warning-color);
+            color: var(--dark-color);
+            text-align: center;
+            padding: 0.5rem;
+            z-index: 1001;
+            display: none;
+        }
+    </style>
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Offline Indicator -->
+    <div class="offline-indicator" id="offlineIndicator">
+        <i class="fas fa-wifi"></i> You are currently offline. Some features may be limited.
+    </div>
+    
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'frontend:home' %}">
+                <i class="fas fa-seedling"></i> Mlimi App
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'frontend:home' %}">
+                            <i class="fas fa-home"></i> Home
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'frontend:about' %}">
+                            <i class="fas fa-info-circle"></i> About
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'frontend:contact' %}">
+                            <i class="fas fa-envelope"></i> Contact
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'frontend:products' %}">
+                            <i class="fas fa-shopping-cart"></i> Products
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'frontend:market_prices' %}">
+                            <i class="fas fa-chart-line"></i> Market Prices
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'frontend:weather' %}">
+                            <i class="fas fa-cloud-sun"></i> Weather
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'frontend:pest_detection' %}">
+                            <i class="fas fa-bug"></i> Pest Detection
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'frontend:community' %}">
+                            <i class="fas fa-users"></i> Community
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'frontend:newsletters' %}">
+                            <i class="fas fa-newspaper"></i> Newsletters
+                        </a>
+                    </li>
+                </ul>
+                
+                <ul class="navbar-nav">
+                    {% if user.is_authenticated %}
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
+                                <i class="fas fa-user"></i> {{ user.username }}
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="{% url 'frontend:profile' %}">Profile</a></li>
+                                <li><a class="dropdown-item" href="{% url 'frontend:my_products' %}">My Products</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="{% url 'frontend:logout' %}">Logout</a></li>
+                            </ul>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'frontend:login' %}">
+                                <i class="fas fa-sign-in-alt"></i> Login
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'frontend:register' %}">
+                                <i class="fas fa-user-plus"></i> Register
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- Language Switcher -->
+    <div class="language-switcher">
+        <div class="btn-group" role="group">
+            <button type="button" class="btn btn-outline-primary btn-sm" onclick="switchLanguage('en')">EN</button>
+            <button type="button" class="btn btn-outline-primary btn-sm" onclick="switchLanguage('ch')">CH</button>
+        </div>
+    </div>
+    
+    <!-- Main Content -->
+    <main class="container my-4">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+        
+        {% block content %}{% endblock %}
+    </main>
+    
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>Mlimi App</h5>
+                    <p>Empowering smallholder farmers in Malawi with digital tools and information.</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <h5>Quick Links</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="#" class="text-light">About Us</a></li>
+                        <li><a href="#" class="text-light">Contact</a></li>
+                        <li><a href="#" class="text-light">Privacy Policy</a></li>
+                    </ul>
+                </div>
+            </div>
+            <hr class="my-3">
+            <div class="text-center">
+                <p>&copy; 2024 Mlimi App. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+    
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Custom JS -->
+    <script>
+        // Language switching functionality
+        function switchLanguage(lang) {
+            // Store language preference
+            localStorage.setItem('language', lang);
+            
+            // Reload page to apply language change
+            location.reload();
+        }
+        
+        // Offline detection
+        window.addEventListener('online', function() {
+            document.getElementById('offlineIndicator').style.display = 'none';
+        });
+        
+        window.addEventListener('offline', function() {
+            document.getElementById('offlineIndicator').style.display = 'block';
+        });
+        
+        // Check initial online status
+        if (!navigator.onLine) {
+            document.getElementById('offlineIndicator').style.display = 'block';
+        }
+        
+        // Initialize tooltips
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+    </script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>
+
+

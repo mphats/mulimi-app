@@ -1,0 +1,7 @@
+Hi {{ user.username }},
+
+Use the link below to sign in to your account. This link is valid for 15 minutes and can be used once.
+
+{{ magic_link }}
+
+If you did not request this, ignore this email.

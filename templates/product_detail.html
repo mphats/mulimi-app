@@ -1,0 +1,324 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ product.name }} - Mlimi App{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'products' %}">Products</a></li>
+                <li class="breadcrumb-item active">{{ product.name }}</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Product Images -->
+    <div class="col-md-6">
+        <div class="product-images">
+            {% if product.images.all %}
+                <div id="productCarousel" class="carousel slide" data-bs-ride="carousel">
+                    <div class="carousel-inner">
+                        {% for image in product.images.all %}
+                        <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                            <img src="{{ image.image.url }}" class="d-block w-100 rounded" alt="{{ product.name }}" 
+                                 style="height: 400px; object-fit: cover;">
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% if product.images.count > 1 %}
+                    <button class="carousel-control-prev" type="button" data-bs-target="#productCarousel" data-bs-slide="prev">
+                        <span class="carousel-control-prev-icon"></span>
+                    </button>
+                    <button class="carousel-control-next" type="button" data-bs-target="#productCarousel" data-bs-slide="next">
+                        <span class="carousel-control-next-icon"></span>
+                    </button>
+                    {% endif %}
+                </div>
+                
+                <!-- Thumbnail Navigation -->
+                {% if product.images.count > 1 %}
+                <div class="row mt-3">
+                    {% for image in product.images.all %}
+                    <div class="col-3">
+                        <img src="{{ image.image.url }}" class="img-thumbnail cursor-pointer" 
+                             alt="Thumbnail {{ forloop.counter }}" 
+                             onclick="goToSlide({{ forloop.counter0 }})"
+                             style="height: 80px; object-fit: cover; cursor: pointer;">
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            {% else %}
+                <div class="bg-light rounded d-flex align-items-center justify-content-center" style="height: 400px;">
+                    <i class="fas fa-image text-muted" style="font-size: 4rem;"></i>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Product Information -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-body">
+                <h2 class="card-title">{{ product.name }}</h2>
+                
+                <div class="mb-3">
+                    <span class="badge bg-primary fs-6">{{ product.get_category_display }}</span>
+                    <span class="badge bg-success fs-6 ms-2">MWK {{ product.price_per_unit }}</span>
+                </div>
+                
+                <p class="card-text text-muted">{{ product.description }}</p>
+                
+                <div class="row g-3 mb-3">
+                    <div class="col-6">
+                        <strong>Quantity:</strong><br>
+                        <span class="text-primary">{{ product.quantity }} {{ product.unit }}</span>
+                    </div>
+                    <div class="col-6">
+                        <strong>Harvest Date:</strong><br>
+                        <span class="text-primary">{{ product.harvest_date|date:"M d, Y" }}</span>
+                    </div>
+                    <div class="col-6">
+                        <strong>Location:</strong><br>
+                        <span class="text-primary">
+                            <i class="fas fa-map-marker-alt"></i> {{ product.location }}
+                        </span>
+                    </div>
+                    <div class="col-6">
+                        <strong>Listed:</strong><br>
+                        <span class="text-muted">{{ product.created_at|timesince }} ago</span>
+                    </div>
+                </div>
+                
+                <hr>
+                
+                <div class="seller-info mb-3">
+                    <h6><i class="fas fa-user"></i> Seller Information</h6>
+                    <p class="mb-1">
+                        <strong>{{ product.seller.get_full_name|default:product.seller.username }}</strong>
+                    </p>
+                    <p class="mb-1">
+                        <i class="fas fa-phone text-primary"></i> {{ product.contact_phone }}
+                    </p>
+                    <p class="mb-0">
+                        <i class="fas fa-map-marker-alt text-primary"></i> {{ product.location }}
+                    </p>
+                </div>
+                
+                <div class="d-grid gap-2">
+                    <button class="btn btn-success btn-lg" type="button" onclick="contactSeller()">
+                        <i class="fas fa-phone"></i> Contact Seller
+                    </button>
+                    <button class="btn btn-outline-primary" type="button" onclick="shareProduct()">
+                        <i class="fas fa-share"></i> Share Product
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Product Details Tabs -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <ul class="nav nav-tabs card-header-tabs" id="productTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="details-tab" data-bs-toggle="tab" data-bs-target="#details" type="button" role="tab">
+                            <i class="fas fa-info-circle"></i> Details
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="quality-tab" data-bs-toggle="tab" data-bs-target="#quality" type="button" role="tab">
+                            <i class="fas fa-star"></i> Quality Info
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="shipping-tab" data-bs-toggle="tab" data-bs-target="#shipping" type="button" role="tab">
+                            <i class="fas fa-truck"></i> Shipping & Pickup
+                        </button>
+                    </li>
+                </ul>
+            </div>
+            <div class="card-body">
+                <div class="tab-content" id="productTabsContent">
+                    <div class="tab-pane fade show active" id="details" role="tabpanel">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6>Product Specifications</h6>
+                                <ul class="list-unstyled">
+                                    <li><strong>Category:</strong> {{ product.get_category_display }}</li>
+                                    <li><strong>Quantity:</strong> {{ product.quantity }} {{ product.unit }}</li>
+                                    <li><strong>Price:</strong> MWK {{ product.price_per_unit }} per {{ product.unit }}</li>
+                                    <li><strong>Harvest Date:</strong> {{ product.harvest_date|date:"F d, Y" }}</li>
+                                    <li><strong>Location:</strong> {{ product.location }}</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h6>Additional Information</h6>
+                                <ul class="list-unstyled">
+                                    <li><strong>Listed:</strong> {{ product.created_at|date:"F d, Y" }}</li>
+                                    <li><strong>Last Updated:</strong> {{ product.updated_at|date:"F d, Y" }}</li>
+                                    <li><strong>Status:</strong> 
+                                        {% if product.is_active %}
+                                            <span class="badge bg-success">Active</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">Inactive</span>
+                                        {% endif %}
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="tab-pane fade" id="quality" role="tabpanel">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6>Quality Indicators</h6>
+                                <ul class="list-unstyled">
+                                    <li><i class="fas fa-check text-success me-2"></i> Fresh harvest</li>
+                                    <li><i class="fas fa-check text-success me-2"></i> Local sourcing</li>
+                                    <li><i class="fas fa-check text-success me-2"></i> Direct from farmer</li>
+                                    <li><i class="fas fa-check text-success me-2"></i> No middlemen</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h6>Storage Recommendations</h6>
+                                <ul class="list-unstyled">
+                                    <li><i class="fas fa-info-circle text-info me-2"></i> Store in cool, dry place</li>
+                                    <li><i class="fas fa-info-circle text-info me-2"></i> Avoid direct sunlight</li>
+                                    <li><i class="fas fa-info-circle text-info me-2"></i> Use within recommended timeframe</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="tab-pane fade" id="shipping" role="tabpanel">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6>Pickup Options</h6>
+                                <ul class="list-unstyled">
+                                    <li><i class="fas fa-map-marker-alt text-primary me-2"></i> Pickup from seller location</li>
+                                    <li><i class="fas fa-calendar text-primary me-2"></i> Arrange pickup time with seller</li>
+                                    <li><i class="fas fa-phone text-primary me-2"></i> Contact seller for arrangements</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h6>Payment Options</h6>
+                                <ul class="list-unstyled">
+                                    <li><i class="fas fa-money-bill text-success me-2"></i> Cash on pickup</li>
+                                    <li><i class="fas fa-mobile-alt text-success me-2"></i> Mobile money (arrange with seller)</li>
+                                    <li><i class="fas fa-handshake text-success me-2"></i> Negotiable payment terms</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Related Products -->
+{% if related_products %}
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-tags"></i> Related Products</h5>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    {% for related in related_products %}
+                    <div class="col-md-3">
+                        <div class="card h-100 product-card">
+                            {% if related.images.first %}
+                                <img src="{{ related.images.first.image.url }}" class="card-img-top" alt="{{ related.name }}" 
+                                     style="height: 150px; object-fit: cover;">
+                            {% else %}
+                                <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 150px;">
+                                    <i class="fas fa-image text-muted" style="font-size: 2rem;"></i>
+                                </div>
+                            {% endif %}
+                            <div class="card-body">
+                                <h6 class="card-title">{{ related.name }}</h6>
+                                <p class="card-text text-muted small">{{ related.description|truncatewords:8 }}</p>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <strong class="text-success">MWK {{ related.price_per_unit }}</strong>
+                                    <small class="text-muted">{{ related.location }}</small>
+                                </div>
+                            </div>
+                            <div class="card-footer bg-transparent">
+                                <a href="{% url 'product_detail' related.id %}" class="btn btn-sm btn-outline-primary w-100">
+                                    View Details
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .product-card {
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    
+    .product-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    }
+    
+    .cursor-pointer {
+        cursor: pointer;
+    }
+    
+    .carousel-item img {
+        border-radius: 0.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function goToSlide(slideIndex) {
+    const carousel = new bootstrap.Carousel(document.getElementById('productCarousel'));
+    carousel.to(slideIndex);
+}
+
+function contactSeller() {
+    // This would implement contact functionality
+    // For now, just show the phone number
+    const phone = '{{ product.contact_phone }}';
+    alert(`Contact seller at: ${phone}`);
+}
+
+function shareProduct() {
+    // This would implement sharing functionality
+    const url = window.location.href;
+    const title = '{{ product.name }}';
+    
+    if (navigator.share) {
+        navigator.share({
+            title: title,
+            url: url
+        });
+    } else {
+        // Fallback for browsers that don't support Web Share API
+        navigator.clipboard.writeText(url).then(() => {
+            alert('Product link copied to clipboard!');
+        });
+    }
+}
+</script>
+{% endblock %}

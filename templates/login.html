@@ -1,0 +1,212 @@
+{% extends 'base.html' %}
+
+{% block title %}Login - Mlimi App{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6 col-lg-5">
+        <div class="card shadow">
+            <div class="card-header text-center bg-primary text-white">
+                <h4 class="mb-0"><i class="fas fa-sign-in-alt"></i> Welcome Back</h4>
+                <p class="mb-0">Sign in to your Mlimi App account</p>
+            </div>
+            <div class="card-body p-4">
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+                
+                <form method="POST" id="loginForm">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="username" class="form-label">Username or Email</label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="fas fa-user"></i>
+                            </span>
+                            <input type="text" name="username" id="username" class="form-control" 
+                                   placeholder="Enter your username or email" required>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Password</label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="fas fa-lock"></i>
+                            </span>
+                            <input type="password" name="password" id="password" class="form-control" 
+                                   placeholder="Enter your password" required>
+                            <button class="btn btn-outline-secondary" type="button" id="togglePassword">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="remember" id="remember">
+                            <label class="form-check-label" for="remember">
+                                Remember me for 30 days
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid mb-3">
+                        <button type="submit" class="btn btn-primary btn-lg" id="loginBtn">
+                            <i class="fas fa-sign-in-alt"></i> Sign In
+                        </button>
+                    </div>
+                    
+                    <div class="text-center">
+                        <a href="{% url 'frontend:password_reset' %}" class="text-decoration-none">
+                            <i class="fas fa-key"></i> Forgot your password?
+                        </a>
+                    </div>
+                </form>
+                
+                <hr class="my-4">
+                
+                <div class="text-center">
+                    <p class="mb-2">Don't have an account?</p>
+                    <a href="{% url 'frontend:register' %}" class="btn btn-outline-primary">
+                        <i class="fas fa-user-plus"></i> Create Account
+                    </a>
+                </div>
+                
+                <!-- Magic Link Login -->
+                <div class="mt-4">
+                    <div class="card border-info">
+                        <div class="card-header bg-info text-white">
+                            <h6 class="mb-0"><i class="fas fa-magic"></i> Passwordless Login</h6>
+                        </div>
+                        <div class="card-body">
+                            <p class="small text-muted mb-2">
+                                Get a magic link sent to your email for instant access
+                            </p>
+                            <form method="POST" action="{% url 'magic_link_login' %}" id="magicLinkForm">
+                                {% csrf_token %}
+                                <div class="input-group">
+                                    <input type="email" name="email" class="form-control" 
+                                           placeholder="Enter your email" required>
+                                    <button class="btn btn-info" type="submit">
+                                        <i class="fas fa-paper-plane"></i> Send Link
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Features Preview -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="fas fa-star"></i> Why Choose Mlimi App?</h6>
+            </div>
+            <div class="card-body">
+                <div class="row g-2">
+                    <div class="col-6">
+                        <small class="text-muted">
+                            <i class="fas fa-check text-success me-1"></i> AI Pest Detection
+                        </small>
+                    </div>
+                    <div class="col-6">
+                        <small class="text-muted">
+                            <i class="fas fa-check text-success me-1"></i> Market Prices
+                        </small>
+                    </div>
+                    <div class="col-6">
+                        <small class="text-muted">
+                            <i class="fas fa-check text-success me-1"></i> Weather Forecasts
+                        </small>
+                    </div>
+                    <div class="col-6">
+                        <small class="text-muted">
+                            <i class="fas fa-check text-success me-1"></i> Community Forum
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .card {
+        border: none;
+        border-radius: 15px;
+    }
+    
+    .card-header {
+        border-radius: 15px 15px 0 0 !important;
+        border: none;
+    }
+    
+    .form-control, .btn {
+        border-radius: 10px;
+    }
+    
+    .input-group-text {
+        border-radius: 10px 0 0 10px;
+        border: none;
+        background-color: #f8f9fa;
+    }
+    
+    .btn-outline-secondary {
+        border-radius: 0 10px 10px 0;
+    }
+    
+    .alert {
+        border-radius: 10px;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const togglePassword = document.getElementById('togglePassword');
+    const password = document.getElementById('password');
+    const loginForm = document.getElementById('loginForm');
+    const loginBtn = document.getElementById('loginBtn');
+    
+    // Toggle password visibility
+    togglePassword.addEventListener('click', function() {
+        const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
+        password.setAttribute('type', type);
+        this.querySelector('i').classList.toggle('fa-eye');
+        this.querySelector('i').classList.toggle('fa-eye-slash');
+    });
+    
+    // Form submission
+    loginForm.addEventListener('submit', function(e) {
+        loginBtn.disabled = true;
+        loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Signing In...';
+    });
+    
+    // Magic link form submission
+    document.getElementById('magicLinkForm').addEventListener('submit', function(e) {
+        const submitBtn = this.querySelector('button[type="submit"]');
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
+        
+        // Re-enable button after 3 seconds (in case of error)
+        setTimeout(() => {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Send Link';
+        }, 3000);
+    });
+    
+    // Auto-focus username field
+    document.getElementById('username').focus();
+});
+</script>
+{% endblock %}

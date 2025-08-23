@@ -1,0 +1,160 @@
+{% extends 'base.html' %}
+
+{% block title %}Market Prices - Mlimi App{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h1><i class="fas fa-chart-line"></i> Market Prices</h1>
+        <p class="text-muted">Get real-time market prices from different locations across Malawi</p>
+    </div>
+</div>
+
+<!-- Filters -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="GET" class="row g-3">
+            <div class="col-md-3">
+                <label for="category" class="form-label">Product Category</label>
+                <select name="category" id="category" class="form-select">
+                    <option value="">All Categories</option>
+                    {% for category in categories %}
+                        <option value="{{ category }}" {% if request.GET.category == category %}selected{% endif %}>
+                            {{ category }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="location" class="form-label">Location</label>
+                <select name="location" id="location" class="form-select">
+                    <option value="">All Locations</option>
+                    {% for location in locations %}
+                        <option value="{{ location }}" {% if request.GET.location == location %}selected{% endif %}>
+                            {{ location }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="market" class="form-label">Market</label>
+                <select name="market" id="market" class="form-select">
+                    <option value="">All Markets</option>
+                    {% for market in markets %}
+                        <option value="{{ market }}" {% if request.GET.market == market %}selected{% endif %}>
+                            {{ market }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">&nbsp;</label>
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-filter"></i> Apply Filters
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Market Prices by Category -->
+{% if prices_by_category %}
+    {% for category, prices in prices_by_category.items %}
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">
+                <i class="fas fa-tag"></i> {{ category }}
+                <span class="badge bg-secondary float-end">{{ prices|length }} prices</span>
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Market</th>
+                            <th>Location</th>
+                            <th>Price</th>
+                            <th>Type</th>
+                            <th>Source</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for price in prices %}
+                        <tr>
+                            <td>
+                                <strong>{{ price.market_name }}</strong>
+                            </td>
+                            <td>
+                                <i class="fas fa-map-marker-alt text-primary"></i>
+                                {{ price.location }}
+                            </td>
+                            <td>
+                                <span class="badge bg-success fs-6">
+                                    MWK {{ price.price_per_unit }}
+                                </span>
+                                <small class="text-muted d-block">{{ price.unit }}</small>
+                            </td>
+                            <td>
+                                {% if price.is_buying %}
+                                    <span class="badge bg-info">Buying</span>
+                                {% else %}
+                                    <span class="badge bg-warning">Selling</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <small class="text-muted">{{ price.source|default:"Manual Entry" }}</small>
+                            </td>
+                            <td>
+                                <small class="text-muted">
+                                    {{ price.recorded_at|date:"M d, Y" }}
+                                </small>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+{% else %}
+    <div class="text-center py-5">
+        <i class="fas fa-chart-line text-muted" style="font-size: 4rem;"></i>
+        <h4 class="mt-3 text-muted">No market prices found</h4>
+        <p class="text-muted">Try adjusting your filters or check back later for updated prices.</p>
+    </div>
+{% endif %}
+
+<!-- Price Trends Info -->
+<div class="card mt-4">
+    <div class="card-header">
+        <h5 class="mb-0"><i class="fas fa-info-circle"></i> Understanding Market Prices</h5>
+    </div>
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-6">
+                <h6><i class="fas fa-chart-area text-primary"></i> Price Trends</h6>
+                <ul class="list-unstyled">
+                    <li><i class="fas fa-check text-success me-2"></i> Prices are updated daily</li>
+                    <li><i class="fas fa-check text-success me-2"></i> Compare prices across markets</li>
+                    <li><i class="fas fa-check text-success me-2"></i> Track seasonal variations</li>
+                    <li><i class="fas fa-check text-success me-2"></i> Make informed selling decisions</li>
+                </ul>
+            </div>
+            <div class="col-md-6">
+                <h6><i class="fas fa-lightbulb text-warning"></i> Tips for Farmers</h6>
+                <ul class="list-unstyled">
+                    <li><i class="fas fa-check text-success me-2"></i> Sell when prices are high</li>
+                    <li><i class="fas fa-check text-success me-2"></i> Consider transport costs</li>
+                    <li><i class="fas fa-check text-success me-2"></i> Build relationships with traders</li>
+                    <li><i class="fas fa-check text-success me-2"></i> Plan harvest timing</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
