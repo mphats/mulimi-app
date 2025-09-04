@@ -97,7 +97,7 @@ class _PestDiagnosisScreenState extends State<PestDiagnosisScreen> {
       );
 
       if (result.isSuccess && result.result != null) {
-        // Create a PestDiagnosisModel from the DiagnosisResult for display
+        // Create a PestDiagnosisModel 
         final mockDiagnosis = PestDiagnosisModel(
           id: DateTime.now().millisecondsSinceEpoch,
           user: context.read<AuthProvider>().user!,
