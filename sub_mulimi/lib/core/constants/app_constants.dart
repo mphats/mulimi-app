@@ -4,7 +4,7 @@ class AppConstants {
   // static const String baseUrl = 'http://localhost:8000'; // iOS simulator
   // static const String baseUrl = 'https://your-production-url.com'; // Production
 
-  static const String apiV1 = '$baseUrl/api/v1';
+  static const String apiV1 = '$baseUrl/api/v1/';
   static const String apiAuth = '$apiV1/auth';
   static const String apiUsers = '$apiV1/users';
 
