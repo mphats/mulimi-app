@@ -14,7 +14,7 @@ class ApiService {
   void initialize() {
     _dio = Dio(
       BaseOptions(
-        baseUrl: AppConstants.apiV1,
+        baseUrl: AppConstants.resolveApiBase(),
         connectTimeout: const Duration(seconds: 30),
         receiveTimeout: const Duration(seconds: 30),
         headers: {
