@@ -9,6 +9,7 @@ class ApiService {
 
   late Dio _dio;
   final FlutterSecureStorage _secureStorage = const FlutterSecureStorage();
+  Future<bool>? _refreshFuture;
 
   void initialize() {
     _dio = Dio(
@@ -29,7 +30,7 @@ class ApiService {
         onRequest: (options, handler) async {
           // Add auth token to requests
           final token = await getAccessToken();
-          if (token != null) {
+          if (token != null && !_isAuthTokenEndpoint(options.path)) {
             options.headers['Authorization'] = 'Bearer $token';
           }
 
@@ -46,23 +47,30 @@ class ApiService {
           _logError(error);
 
           // Handle token expiry (401 Unauthorized)
-          if (error.response?.statusCode == 401) {
-            final refreshed = await _refreshToken();
-            if (refreshed) {
-              // Retry the original request with new token
-              final token = await getAccessToken();
-              final options = error.requestOptions;
-              options.headers['Authorization'] = 'Bearer $token';
+          if (error.response?.statusCode == 401 && !_isAuthTokenEndpoint(error.requestOptions.path)) {
+            try {
+              // Single-flight token refresh
+              _refreshFuture ??= _refreshToken();
+              final refreshed = await _refreshFuture!;
+              _refreshFuture = null;
 
-              try {
-                final response = await _dio.fetch(options);
-                handler.resolve(response);
-                return;
-              } catch (e) {
-                // If retry fails, proceed with original error
+              if (refreshed) {
+                // Retry the original request with new token
+                final token = await getAccessToken();
+                final options = error.requestOptions;
+                options.headers['Authorization'] = 'Bearer $token';
+                try {
+                  final response = await _dio.fetch(options);
+                  handler.resolve(response);
+                  return;
+                } catch (_) {
+                  // fall through to original error
+                }
+              } else {
+                await clearTokens();
               }
-            } else {
-              // Refresh failed, clear tokens and redirect to login
+            } catch (_) {
+              _refreshFuture = null;
               await clearTokens();
             }
           }
@@ -280,7 +288,8 @@ class ApiService {
     assert(() {
       print('🟢 API Request: ${options.method} ${options.uri}');
       if (options.data != null) {
-        print('📤 Request Data: ${options.data}');
+        final redacted = _redactSensitive(options.data);
+        print('📤 Request Data: $redacted');
       }
       return true;
     }());
@@ -304,6 +313,24 @@ class ApiService {
       }
       return true;
     }());
+  }
+
+  bool _isAuthTokenEndpoint(String path) {
+    final p = path.toLowerCase();
+    return p.contains('auth/token');
+  }
+
+  dynamic _redactSensitive(dynamic data) {
+    if (data is Map) {
+      final sanitized = Map.from(data);
+      for (final key in ['password', 'new_password', 'token']) {
+        if (sanitized.containsKey(key)) {
+          sanitized[key] = '***redacted***';
+        }
+      }
+      return sanitized;
+    }
+    return data;
   }
 }
 

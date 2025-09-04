@@ -21,44 +21,44 @@ class AppConstants {
   static const String languageKey = 'language_code';
   static const String onboardingKey = 'onboarding_completed';
 
-  // API endpoints
-  static const String healthCheck = '/health';
-  static const String login = '/auth/token/';
-  static const String register = '/auth/register/';
-  static const String refreshToken = '/auth/token/refresh/';
-  static const String userProfile = '/auth/me/';
-  static const String magicLinkRequest = '/auth/magic-link-request/';
-  static const String magicLinkVerify = '/auth/magic-link-verify/';
-  static const String passwordReset = '/auth/password-reset/';
-  static const String passwordResetConfirm = '/auth/password-reset-confirm/';
-  static const String emailVerify = '/auth/verify-email/';
+  // API endpoints (no leading slash; appended to apiV1)
+  static const String healthCheck = 'health';
+  static const String login = 'auth/token/';
+  static const String register = 'auth/register';
+  static const String refreshToken = 'auth/token/refresh/';
+  static const String userProfile = 'auth/me';
+  static const String magicLinkRequest = 'auth/magic-link-request';
+  static const String magicLinkVerify = 'auth/magic-link-verify';
+  static const String passwordReset = 'auth/password-reset';
+  static const String passwordResetConfirm = 'auth/password-reset-confirm';
+  static const String emailVerify = 'auth/verify-email';
 
   // Product endpoints
-  static const String products = '/products';
-  static const String productImages = '/products/{id}/images';
+  static const String products = 'products';
+  static const String productImages = 'products/{id}/images';
 
   // Market prices
-  static const String marketPrices = '/market-prices';
-  static const String marketPricesCreate = '/market-prices/create';
+  static const String marketPrices = 'market-prices';
+  static const String marketPricesCreate = 'market-prices/create';
 
   // Weather
-  static const String weather = '/weather';
+  static const String weather = 'weather';
 
   // Community
-  static const String communityPosts = '/community/posts';
-  static const String communityReplies = '/community/posts/{id}/replies';
-  static const String postLike = '/community/posts/{id}/like';
-  static const String postShare = '/community/posts/{id}/share';
-  static const String postView = '/community/posts/{id}/view';
-  static const String replyLike = '/community/replies/{id}/like';
-  static const String markSolution = '/community/replies/{id}/solution';
+  static const String communityPosts = 'community/posts';
+  static const String communityReplies = 'community/posts/{id}/replies';
+  static const String postLike = 'community/posts/{id}/like';
+  static const String postShare = 'community/posts/{id}/share';
+  static const String postView = 'community/posts/{id}/view';
+  static const String replyLike = 'community/replies/{id}/like';
+  static const String markSolution = 'community/replies/{id}/solution';
 
   // Newsletters
-  static const String newsletters = '/newsletters';
+  static const String newsletters = 'newsletters';
 
   // AI Diagnosis
-  static const String pestDiagnosis = '/pest-diagnosis';
-  static const String asyncPestDiagnosis = '/pest-diagnosis/async';
+  static const String pestDiagnosis = 'pest-diagnosis';
+  static const String asyncPestDiagnosis = 'pest-diagnosis/async';
 
   // Pagination
   static const int defaultPageSize = 20;
