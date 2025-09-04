@@ -1,0 +1,607 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ post.title }} - Community{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <!-- Main Content -->
+        <div class="col-lg-8">
+            <!-- Back Button -->
+            <div class="mb-3">
+                <a href="{% url 'frontend:community' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Community
+                </a>
+            </div>
+
+            <!-- Post Content -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <!-- Post Header -->
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div class="d-flex align-items-center">
+                            <div class="avatar me-3">
+                                <i class="fas fa-user-circle fa-2x text-primary"></i>
+                            </div>
+                            <div>
+                                <h6 class="mb-0">{{ post.author.get_full_name|default:post.author.username }}</h6>
+                                <small class="text-muted">{{ post.created_at|timesince }} ago</small>
+                            </div>
+                        </div>
+                        <div class="dropdown">
+                            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" 
+                                    data-bs-toggle="dropdown">
+                                <i class="fas fa-ellipsis-v"></i>
+                            </button>
+                            <ul class="dropdown-menu">
+                                {% if user == post.author %}
+                                <li><a class="dropdown-item" href="#">
+                                    <i class="fas fa-edit me-2"></i>Edit Post
+                                </a></li>
+                                <li><a class="dropdown-item text-danger" href="#">
+                                    <i class="fas fa-trash me-2"></i>Delete Post
+                                </a></li>
+                                {% endif %}
+                                <li><a class="dropdown-item" href="#">
+                                    <i class="fas fa-flag me-2"></i>Report
+                                </a></li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Post Categories -->
+                    <div class="mb-3">
+                        <span class="badge bg-primary">{{ post.get_category_display }}</span>
+                        {% if post.is_question %}
+                        <span class="badge bg-warning">Question</span>
+                        {% endif %}
+                        {% if post.is_resolved %}
+                        <span class="badge bg-success">Resolved</span>
+                        {% endif %}
+                    </div>
+
+                    <!-- Post Title and Content -->
+                    <h3 class="card-title mb-3">{{ post.title }}</h3>
+                    <div class="post-content">
+                        {{ post.content|linebreaks }}
+                    </div>
+
+                    <!-- Post Actions -->
+                    <div class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top">
+                        <div class="d-flex align-items-center">
+                            {% if user.is_authenticated %}
+                            <button class="btn btn-outline-primary btn-sm me-2 like-btn" data-post-id="{{ post.id }}" data-liked="{{ user_liked_post|yesno:'true,false' }}">
+                                <i class="fas fa-thumbs-up me-1"></i>
+                                <span class="like-text">{% if user_liked_post %}Unlike{% else %}Like{% endif %}</span>
+                                <span class="like-count">({{ like_count }})</span>
+                            </button>
+                            <div class="dropdown me-2">
+                                <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                    <i class="fas fa-share me-1"></i>Share
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item share-btn" href="#" data-method="link" data-post-id="{{ post.id }}">
+                                        <i class="fas fa-link me-2"></i>Copy Link
+                                    </a></li>
+                                    <li><a class="dropdown-item share-btn" href="#" data-method="whatsapp" data-post-id="{{ post.id }}">
+                                        <i class="fab fa-whatsapp me-2"></i>WhatsApp
+                                    </a></li>
+                                    <li><a class="dropdown-item share-btn" href="#" data-method="facebook" data-post-id="{{ post.id }}">
+                                        <i class="fab fa-facebook me-2"></i>Facebook
+                                    </a></li>
+                                    <li><a class="dropdown-item share-btn" href="#" data-method="twitter" data-post-id="{{ post.id }}">
+                                        <i class="fab fa-twitter me-2"></i>Twitter
+                                    </a></li>
+                                    <li><a class="dropdown-item share-btn" href="#" data-method="email" data-post-id="{{ post.id }}">
+                                        <i class="fas fa-envelope me-2"></i>Email
+                                    </a></li>
+                                </ul>
+                            </div>
+                            {% else %}
+                            <a href="{% url 'login' %}" class="btn btn-outline-primary btn-sm me-2">
+                                <i class="fas fa-thumbs-up me-1"></i>Like
+                            </a>
+                            <button class="btn btn-outline-secondary btn-sm me-2" disabled>
+                                <i class="fas fa-share me-1"></i>Share
+                            </button>
+                            {% endif %}
+                            <span class="text-muted me-3">
+                                <i class="fas fa-eye me-1"></i><span class="view-count">{{ view_count }}</span> views
+                            </span>
+                            <span class="text-muted me-3">
+                                <i class="fas fa-share-alt me-1"></i><span class="share-count">{{ share_count }}</span> shares
+                            </span>
+                            {% if user_viewed_post %}
+                            <span class="badge bg-success">
+                                <i class="fas fa-check me-1"></i>Read
+                            </span>
+                            {% endif %}
+                        </div>
+                        <small class="text-muted">
+                            Last updated: {{ post.updated_at|timesince }} ago
+                        </small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Replies Section -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-comments me-2"></i>Replies ({{ replies.count }})
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if replies %}
+                    {% for reply in replies %}
+                    <div class="reply-item mb-4 pb-4 border-bottom">
+                        <div class="d-flex">
+                            <div class="flex-shrink-0 me-3">
+                                <i class="fas fa-user-circle fa-lg text-secondary"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <div>
+                                        <h6 class="mb-0">{{ reply.author.get_full_name|default:reply.author.username }}</h6>
+                                        <small class="text-muted">{{ reply.created_at|timesince }} ago</small>
+                                    </div>
+                                    <div class="dropdown">
+                                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" 
+                                                data-bs-toggle="dropdown">
+                                            <i class="fas fa-ellipsis-v"></i>
+                                        </button>
+                                        <ul class="dropdown-menu">
+                                            {% if user == reply.author %}
+                                            <li><a class="dropdown-item" href="#">
+                                                <i class="fas fa-edit me-2"></i>Edit
+                                            </a></li>
+                                            <li><a class="dropdown-item text-danger" href="#">
+                                                <i class="fas fa-trash me-2"></i>Delete
+                                            </a></li>
+                                            {% endif %}
+                                            <li><a class="dropdown-item" href="#">
+                                                <i class="fas fa-flag me-2"></i>Report
+                                            </a></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                
+                                <div class="reply-content mb-2">
+                                    {{ reply.content|linebreaks }}
+                                </div>
+
+                                {% if reply.is_solution %}
+                                <div class="alert alert-success py-2 px-3 mb-2">
+                                    <i class="fas fa-check-circle me-2"></i>
+                                    <strong>Marked as Solution</strong>
+                                </div>
+                                {% endif %}
+
+                                <div class="d-flex align-items-center">
+                                    {% if user.is_authenticated %}
+                                    <button class="btn btn-outline-primary btn-sm me-2 reply-like-btn" data-reply-id="{{ reply.id }}" data-liked="{% if reply.id in user_liked_replies %}true{% else %}false{% endif %}">
+                                        <i class="fas fa-thumbs-up me-1"></i>
+                                        <span class="reply-like-text">{% if reply.id in user_liked_replies %}Unlike{% else %}Like{% endif %}</span>
+                                        <span class="reply-like-count">({{ reply.get_like_count }})</span>
+                                    </button>
+                                    {% if user == post.author and not reply.is_solution %}
+                                    <button class="btn btn-outline-success btn-sm me-2 mark-solution-btn" data-reply-id="{{ reply.id }}">
+                                        <i class="fas fa-check me-1"></i>Mark as Solution
+                                    </button>
+                                    {% elif user == post.author and reply.is_solution %}
+                                    <button class="btn btn-success btn-sm me-2 unmark-solution-btn" data-reply-id="{{ reply.id }}">
+                                        <i class="fas fa-check me-1"></i>Solution
+                                    </button>
+                                    {% endif %}
+                                    {% else %}
+                                    <a href="{% url 'login' %}" class="btn btn-outline-primary btn-sm me-2">
+                                        <i class="fas fa-thumbs-up me-1"></i>Like
+                                    </a>
+                                    {% endif %}
+                                    <button class="btn btn-outline-secondary btn-sm">
+                                        <i class="fas fa-reply me-1"></i>Reply
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-comments fa-3x text-muted mb-3"></i>
+                        <h5>No replies yet</h5>
+                        <p class="text-muted">Be the first to reply to this post!</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Reply Form -->
+            {% if user.is_authenticated %}
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-reply me-2"></i>Add Your Reply
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="content" class="form-label">Your Reply</label>
+                            <textarea class="form-control" id="content" name="content" rows="4" 
+                                      placeholder="Share your thoughts, advice, or answer..." required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-paper-plane me-2"></i>Post Reply
+                        </button>
+                    </form>
+                </div>
+            </div>
+            {% else %}
+            <div class="card mt-4">
+                <div class="card-body text-center">
+                    <i class="fas fa-lock fa-2x text-muted mb-3"></i>
+                    <h5>Login to Reply</h5>
+                    <p class="text-muted">You need to be logged in to reply to this post.</p>
+                    <a href="{% url 'login' %}" class="btn btn-primary">
+                        <i class="fas fa-sign-in-alt me-2"></i>Login
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Author Info -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-user me-2"></i>About the Author
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <i class="fas fa-user-circle fa-2x text-primary me-3"></i>
+                        <div>
+                            <h6 class="mb-0">{{ post.author.get_full_name|default:post.author.username }}</h6>
+                            <small class="text-muted">Member since {{ post.author.date_joined|date:"M Y" }}</small>
+                        </div>
+                    </div>
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <h6 class="text-primary">{{ post.author.community_posts.count }}</h6>
+                            <small class="text-muted">Posts</small>
+                        </div>
+                        <div class="col-6">
+                            <h6 class="text-success">{{ post.author.community_replies.count }}</h6>
+                            <small class="text-muted">Replies</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Related Posts -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-link me-2"></i>Related Posts
+                    </h6>
+                </div>
+                <div class="card-body">
+                    {% for related_post in related_posts|slice:":5" %}
+                    <div class="mb-3">
+                        <h6>
+                            <a href="{% url 'frontend:post_detail' related_post.id %}" class="text-decoration-none">
+                                {{ related_post.title|truncatechars:40 }}
+                            </a>
+                        </h6>
+                        <small class="text-muted">
+                            {{ related_post.created_at|timesince }} ago • {{ related_post.replies.count }} replies
+                        </small>
+                    </div>
+                    {% empty %}
+                    <p class="text-muted text-center">No related posts</p>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Community Stats -->
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-chart-bar me-2"></i>Community Stats
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-6 mb-3">
+                            <h5 class="text-primary">{{ total_posts|default:0 }}</h5>
+                            <small class="text-muted">Total Posts</small>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <h5 class="text-success">{{ total_replies|default:0 }}</h5>
+                            <small class="text-muted">Total Replies</small>
+                        </div>
+                        <div class="col-6">
+                            <h5 class="text-warning">{{ total_members|default:0 }}</h5>
+                            <small class="text-muted">Members</small>
+                        </div>
+                        <div class="col-6">
+                            <h5 class="text-info">{{ total_questions|default:0 }}</h5>
+                            <small class="text-muted">Questions</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.card {
+    border: none;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.reply-item {
+    transition: background-color 0.2s;
+}
+
+.reply-item:hover {
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    padding: 10px;
+    margin: -10px;
+}
+
+.post-content {
+    font-size: 1.1rem;
+    line-height: 1.6;
+}
+
+.avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f8f9fa;
+}
+</style>
+
+<!-- Page Data for JavaScript -->
+<div id="page-data" 
+     data-authenticated="{{ user.is_authenticated|yesno:'true,false' }}" 
+     data-post-id="{{ post.id|default:'' }}" 
+     style="display: none;"></div>
+
+<script>
+    // Get page data from hidden div
+    const pageDataDiv = document.getElementById('page-data');
+    window.pageData = {
+        isAuthenticated: pageDataDiv.getAttribute('data-authenticated') === 'true',
+        postId: pageDataDiv.getAttribute('data-post-id') ? parseInt(pageDataDiv.getAttribute('data-post-id')) : null
+    };
+</script>
+
+<script>
+// CSRF Token for AJAX requests
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+const csrftoken = getCookie('csrftoken');
+
+// Post Like functionality
+document.addEventListener('click', function(e) {
+    if (e.target.closest('.like-btn')) {
+        e.preventDefault();
+        const btn = e.target.closest('.like-btn');
+        const postId = btn.getAttribute('data-post-id');
+        const isLiked = btn.getAttribute('data-liked') === 'true';
+        
+        const method = isLiked ? 'DELETE' : 'POST';
+        
+        fetch('/api/v1/community/posts/' + postId + '/like', {
+            method: method,
+            headers: {
+                'X-CSRFToken': csrftoken,
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.liked !== undefined) {
+                btn.setAttribute('data-liked', data.liked);
+                const likeText = btn.querySelector('.like-text');
+                const likeCount = btn.querySelector('.like-count');
+                
+                likeText.textContent = data.liked ? 'Unlike' : 'Like';
+                likeCount.textContent = `(${data.like_count})`;
+                
+                // Update button styling
+                if (data.liked) {
+                    btn.classList.remove('btn-outline-primary');
+                    btn.classList.add('btn-primary');
+                } else {
+                    btn.classList.remove('btn-primary');
+                    btn.classList.add('btn-outline-primary');
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error liking post. Please try again.');
+        });
+    }
+    
+    // Reply Like functionality
+    if (e.target.closest('.reply-like-btn')) {
+        e.preventDefault();
+        const btn = e.target.closest('.reply-like-btn');
+        const replyId = btn.getAttribute('data-reply-id');
+        const isLiked = btn.getAttribute('data-liked') === 'true';
+        
+        const method = isLiked ? 'DELETE' : 'POST';
+        
+        fetch('/api/v1/community/replies/' + replyId + '/like', {
+            method: method,
+            headers: {
+                'X-CSRFToken': csrftoken,
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.liked !== undefined) {
+                btn.setAttribute('data-liked', data.liked);
+                const likeText = btn.querySelector('.reply-like-text');
+                const likeCount = btn.querySelector('.reply-like-count');
+                
+                likeText.textContent = data.liked ? 'Unlike' : 'Like';
+                likeCount.textContent = `(${data.like_count})`;
+                
+                // Update button styling
+                if (data.liked) {
+                    btn.classList.remove('btn-outline-primary');
+                    btn.classList.add('btn-primary');
+                } else {
+                    btn.classList.remove('btn-primary');
+                    btn.classList.add('btn-outline-primary');
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error liking reply. Please try again.');
+        });
+    }
+    
+    // Mark as Solution functionality
+    if (e.target.closest('.mark-solution-btn') || e.target.closest('.unmark-solution-btn')) {
+        e.preventDefault();
+        const btn = e.target.closest('.mark-solution-btn') || e.target.closest('.unmark-solution-btn');
+        const replyId = btn.getAttribute('data-reply-id');
+        const isUnmark = btn.classList.contains('unmark-solution-btn');
+        
+        const method = isUnmark ? 'DELETE' : 'POST';
+        
+        fetch('/api/v1/community/replies/' + replyId + '/solution', {
+            method: method,
+            headers: {
+                'X-CSRFToken': csrftoken,
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.marked_as_solution !== undefined) {
+                // Refresh page to update all solution indicators
+                location.reload();
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error marking solution. Please try again.');
+        });
+    }
+    
+    // Share functionality
+    if (e.target.closest('.share-btn')) {
+        e.preventDefault();
+        const btn = e.target.closest('.share-btn');
+        const postId = btn.getAttribute('data-post-id');
+        const method = btn.getAttribute('data-method');
+        
+        fetch('/api/v1/community/posts/' + postId + '/share', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrftoken,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                method: method
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.shared) {
+                // Update share count
+                const shareCount = document.querySelector('.share-count');
+                if (shareCount) {
+                    shareCount.textContent = data.share_count;
+                }
+                
+                // Handle different share methods
+                if (method === 'link') {
+                    // Copy to clipboard
+                    navigator.clipboard.writeText(data.share_url).then(() => {
+                        alert('Link copied to clipboard!');
+                    }).catch(() => {
+                        // Fallback for older browsers
+                        const textArea = document.createElement('textarea');
+                        textArea.value = data.share_url;
+                        document.body.appendChild(textArea);
+                        textArea.select();
+                        document.execCommand('copy');
+                        document.body.removeChild(textArea);
+                        alert('Link copied to clipboard!');
+                    });
+                } else {
+                    // Open share URL in new window
+                    window.open(data.share_url, '_blank', 'width=600,height=400');
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error sharing post. Please try again.');
+        });
+    }
+});
+
+// Auto-track view when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    // Track view for authenticated users
+    if (window.pageData && window.pageData.isAuthenticated && window.pageData.postId) {
+        var postId = window.pageData.postId;
+        
+        fetch('/api/v1/community/posts/' + postId + '/view', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrftoken,
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.viewed) {
+                // Update view count
+                var viewCount = document.querySelector('.view-count');
+                if (viewCount) {
+                    viewCount.textContent = data.view_count;
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Error tracking view:', error);
+        });
+    }
+});
+</script>
+{% endblock %}

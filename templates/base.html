@@ -104,8 +104,10 @@
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container">
-            <a class="navbar-brand" href="{% url 'frontend:home' %}">
-                <i class="fas fa-seedling"></i> Mlimi App
+            <a class="navbar-brand d-flex align-items-center" href="{% url 'frontend:home' %}">
+                {% load static %}
+                <img src="{% static 'images/logo-mulimi.png' %}" alt="Mulimi" height="36" class="me-2"/>
+                <span>Mlimi App</span>
             </a>
             
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -145,8 +147,8 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'frontend:pest_detection' %}">
-                            <i class="fas fa-bug"></i> Pest Detection
+                        <a class="nav-link" href="{% url 'frontend:pest_diagnosis' %}">
+                            <i class="fas fa-bug"></i> Pest Diagnosis
                         </a>
                     </li>
                     <li class="nav-item">
@@ -155,8 +157,8 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'frontend:newsletters' %}">
-                            <i class="fas fa-newspaper"></i> Newsletters
+                        <a class="nav-link" href="{% url 'frontend:newsletter' %}">
+                            <i class="fas fa-newspaper"></i> Newsletter
                         </a>
                     </li>
                 </ul>

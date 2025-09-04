@@ -1,0 +1,237 @@
+{% extends 'base.html' %}
+
+{% block title %}Pest Diagnosis - Mlimi App{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h1><i class="fas fa-bug"></i> AI Pest Diagnosis</h1>
+        <p class="text-muted">Upload images of your crops to get instant AI-powered pest and disease diagnosis</p>
+    </div>
+    <div class="col-md-4 text-end">
+        {% if total_diagnoses %}
+            <div class="card bg-light">
+                <div class="card-body text-center">
+                    <h4 class="text-primary mb-0">{{ total_diagnoses }}</h4>
+                    <small class="text-muted">Total Diagnoses</small>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Messages -->
+{% if messages %}
+    {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    {% endfor %}
+{% endif %}
+
+<!-- Upload Section -->
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-upload"></i> Submit Diagnosis Request</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" enctype="multipart/form-data" id="pestDiagnosisForm">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="crop_type" class="form-label">Crop Type *</label>
+                        <select name="crop_type" id="crop_type" class="form-select" required>
+                            <option value="">Select Crop Type</option>
+                            <option value="maize">Maize</option>
+                            <option value="rice">Rice</option>
+                            <option value="beans">Beans</option>
+                            <option value="tomatoes">Tomatoes</option>
+                            <option value="potatoes">Potatoes</option>
+                            <option value="cassava">Cassava</option>
+                            <option value="sweet_potato">Sweet Potato</option>
+                            <option value="groundnuts">Groundnuts</option>
+                            <option value="soybeans">Soybeans</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="symptoms" class="form-label">Symptoms Description *</label>
+                        <textarea name="symptoms" id="symptoms" class="form-control" rows="4" 
+                                  placeholder="Describe the symptoms you're seeing: leaf spots, wilting, discoloration, etc." required></textarea>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="image" class="form-label">Crop Image</label>
+                        <input type="file" name="image" id="image" class="form-control" accept="image/*">
+                    </div>
+                    
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary btn-lg" id="submitBtn">
+                            <i class="fas fa-search"></i> Submit for Diagnosis
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="fas fa-info-circle"></i> How It Works</h6>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-4 text-center">
+                        <div class="bg-primary rounded-circle d-inline-flex align-items-center justify-content-center mb-2" 
+                             style="width: 50px; height: 50px;">
+                            <i class="fas fa-camera text-white"></i>
+                        </div>
+                        <small class="d-block">1. Upload Image</small>
+                    </div>
+                    <div class="col-4 text-center">
+                        <div class="bg-warning rounded-circle d-inline-flex align-items-center justify-content-center mb-2" 
+                             style="width: 50px; height: 50px;">
+                            <i class="fas fa-brain text-white"></i>
+                        </div>
+                        <small class="d-block">2. AI Analysis</small>
+                    </div>
+                    <div class="col-4 text-center">
+                        <div class="bg-success rounded-circle d-inline-flex align-items-center justify-content-center mb-2" 
+                             style="width: 50px; height: 50px;">
+                            <i class="fas fa-lightbulb text-white"></i>
+                        </div>
+                        <small class="d-block">3. Get Results</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Diagnoses -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-history"></i> Your Diagnosis History</h5>
+            </div>
+            <div class="card-body">
+                {% if diagnoses %}
+                    <div class="row g-3">
+                        {% for diagnosis in diagnoses %}
+                        <div class="col-md-6 col-lg-4">
+                            <div class="card h-100">
+                                {% if diagnosis.image %}
+                                    <img src="{{ diagnosis.image.url }}" class="card-img-top" alt="Diagnosis Image" 
+                                         style="height: 150px; object-fit: cover;">
+                                {% else %}
+                                    <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 150px;">
+                                        <i class="fas fa-image text-muted" style="font-size: 2rem;"></i>
+                                    </div>
+                                {% endif %}
+                                <div class="card-body">
+                                    <h6 class="card-title">{{ diagnosis.crop_type|title }}</h6>
+                                    <p class="card-text small text-muted">
+                                        <i class="fas fa-calendar"></i> {{ diagnosis.created_at|date:"M d, Y" }}
+                                    </p>
+                                    <div class="mb-2">
+                                        <strong>Diagnosis:</strong>
+                                        <p class="small text-primary">{{ diagnosis.diagnosis }}</p>
+                                    </div>
+                                    <div class="mb-2">
+                                        <strong>Confidence:</strong>
+                                        <div class="progress mb-1" style="height: 8px;">
+                                            <div class="progress-bar {% if diagnosis.confidence_score >= 90 %}bg-success{% elif diagnosis.confidence_score >= 80 %}bg-warning{% else %}bg-danger{% endif %}" 
+                                                 role="progressbar" style="width: {{ diagnosis.confidence_score }}%"></div>
+                                        </div>
+                                        <small class="text-muted">{{ diagnosis.confidence_score|floatformat:1 }}% confidence</small>
+                                    </div>
+                                    <button class="btn btn-sm btn-outline-primary" 
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#diagnosisModal{{ diagnosis.id }}">
+                                        View Details
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Diagnosis Detail Modal -->
+                        <div class="modal fade" id="diagnosisModal{{ diagnosis.id }}" tabindex="-1">
+                            <div class="modal-dialog modal-lg">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">Diagnosis Details - {{ diagnosis.crop_type|title }}</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div class="row">
+                                            {% if diagnosis.image %}
+                                            <div class="col-md-6">
+                                                <img src="{{ diagnosis.image.url }}" class="img-fluid rounded" alt="Diagnosis Image">
+                                            </div>
+                                            {% endif %}
+                                            <div class="col-md-{% if diagnosis.image %}6{% else %}12{% endif %}">
+                                                <h6>Symptoms:</h6>
+                                                <p class="text-muted">{{ diagnosis.symptoms }}</p>
+                                                
+                                                <h6>Diagnosis:</h6>
+                                                <p class="text-primary fw-bold">{{ diagnosis.diagnosis }}</p>
+                                                
+                                                <h6>Confidence Score:</h6>
+                                                <div class="progress mb-2">
+                                                    <div class="progress-bar {% if diagnosis.confidence_score >= 90 %}bg-success{% elif diagnosis.confidence_score >= 80 %}bg-warning{% else %}bg-danger{% endif %}" 
+                                                         role="progressbar" style="width: {{ diagnosis.confidence_score }}%">
+                                                        {{ diagnosis.confidence_score|floatformat:1 }}%
+                                                    </div>
+                                                </div>
+                                                
+                                                <h6>Treatment Advice:</h6>
+                                                <div class="alert alert-info">
+                                                    {{ diagnosis.treatment_advice }}
+                                                </div>
+                                                
+                                                <small class="text-muted">
+                                                    <i class="fas fa-clock"></i> 
+                                                    Submitted on {{ diagnosis.created_at|date:"F d, Y at g:i A" }}
+                                                </small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-history text-muted" style="font-size: 3rem;"></i>
+                        <h5 class="text-muted mt-3">No diagnoses yet</h5>
+                        <p class="text-muted">Submit your first diagnosis request to get started!</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const submitBtn = document.getElementById('submitBtn');
+    
+    // Form submission
+    document.getElementById('pestDiagnosisForm').addEventListener('submit', function(e) {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...';
+    });
+});
+</script>
+{% endblock %}

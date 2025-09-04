@@ -7,7 +7,7 @@
     <div class="col-md-8">
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{% url 'products' %}">Products</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'frontend:products' %}">Products</a></li>
                 <li class="breadcrumb-item active">{{ product.name }}</li>
             </ol>
         </nav>
@@ -253,7 +253,7 @@
                                 </div>
                             </div>
                             <div class="card-footer bg-transparent">
-                                <a href="{% url 'product_detail' related.id %}" class="btn btn-sm btn-outline-primary w-100">
+                                <a href="{% url 'frontend:product_detail' related.id %}" class="btn btn-sm btn-outline-primary w-100">
                                     View Details
                                 </a>
                             </div>

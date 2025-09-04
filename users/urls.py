@@ -4,6 +4,9 @@ from rest_framework_simplejwt.views import (
 )
 from . import views
 
+# Define app_name for namespacing
+app_name = "users"
+
 urlpatterns = [
     path('magic-link-request', views.magic_link_request, name='magic_link_request'),
     path('magic-link-verify', views.magic_link_verify, name='magic_link_verify'),
@@ -13,8 +16,8 @@ urlpatterns = [
     path("verify-email", views.verify_email, name="verify_email"),
     path("password-reset", views.password_reset, name="password_reset"),
     path("password-reset-confirm", views.password_reset_confirm, name="password_reset_confirm"),
-    path("token", TokenObtainPairView.as_view(), name="token_obtain_pair"),
-    path("token/refresh", TokenRefreshView.as_view(), name="token_refresh"),
-    path("token/verify", TokenVerifyView.as_view(), name="token_verify"),
-    path("token/blacklist", TokenBlacklistView.as_view(), name="token_blacklist"),
+    path("token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
+    path("token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
+    path("token/verify/", TokenVerifyView.as_view(), name="token_verify"),
+    path("token/blacklist/", TokenBlacklistView.as_view(), name="token_blacklist"),
 ]

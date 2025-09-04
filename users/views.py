@@ -35,10 +35,40 @@ def _send_verification_email(user: User, request):
         fail_silently=True,
     )
 
-@api_view(["POST"])
+@api_view(["GET", "PATCH"]) 
 @permission_classes([IsAuthenticated])
 def me(request):
-    return Response(MeSerializer(request.user).data)
+    if request.method == "GET":
+        return Response(MeSerializer(request.user).data)
+
+    # PATCH
+    email = request.data.get("email")
+    username = request.data.get("username")
+    role = request.data.get("role")
+
+    user: User = request.user
+    updated = False
+
+    if email is not None and email != user.email:
+        user.email = email
+        updated = True
+    if username is not None and username != user.username:
+        user.username = username
+        updated = True
+
+    if updated:
+        user.save()
+
+    # update role via profile if provided
+    try:
+        if role is not None:
+            user.profile.role = role
+            user.profile.save()
+            updated = True
+    except Exception:
+        pass
+
+    return Response(MeSerializer(user).data)
 
 @api_view(["POST"])
 @permission_classes([AllowAny])

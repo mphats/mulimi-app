@@ -19,6 +19,9 @@ urlpatterns = [
     path('register/', views.register, name='register'),
     path('logout/', views.logout_view, name='logout'),
     path('password-reset/', views.password_reset_view, name='password_reset'),
+    path('password-reset-confirm/', views.password_reset_confirm_view, name='password_reset_confirm'),
+    # Email verification (querystring: ?uid=...&token=...)
+    path('verify-email', views.verify_email, name='verify_email'),
     
     # Products
     path('products/', views.products, name='products'),
@@ -31,17 +34,16 @@ urlpatterns = [
     # Weather
     path('weather/', views.weather, name='weather'),
     
-    # Pest Detection
-    path('pest-detection/', views.pest_detection, name='pest_detection'),
+    # Pest Diagnosis
+    path('pest-diagnosis/', views.pest_diagnosis, name='pest_diagnosis'),
     
     # Community
     path('community/', views.community, name='community'),
     path('community/create-post/', views.create_post, name='create_post'),
     path('community/<int:post_id>/', views.post_detail, name='post_detail'),
     
-    # Newsletters
-    path('newsletters/', views.newsletters, name='newsletters'),
-    path('newsletters/<int:newsletter_id>/', views.newsletter_detail, name='newsletter_detail'),
+    # Newsletter
+    path('newsletter/', views.newsletter, name='newsletter'),
     
     # Profile
     path('profile/', views.profile, name='profile'),

@@ -3,13 +3,16 @@
 {% block title %}My Products - Mlimi App{% endblock %}
 
 {% block content %}
+<!-- CSRF Token for AJAX requests -->
+<meta name="csrf-token" content="{{ csrf_token }}">
+{% csrf_token %}
 <div class="row mb-4">
     <div class="col-md-8">
         <h1><i class="fas fa-shopping-cart"></i> My Products</h1>
         <p class="text-muted">Manage your listed agricultural products</p>
     </div>
     <div class="col-md-4 text-end">
-        <a href="{% url 'products' %}?action=create" class="btn btn-success">
+        <a href="{% url 'frontend:products' %}?action=create" class="btn btn-success">
             <i class="fas fa-plus"></i> List New Product
         </a>
     </div>
@@ -20,7 +23,7 @@
     <div class="col-md-3">
         <div class="card text-center">
             <div class="card-body">
-                <h4 class="text-primary">{{ products.count }}</h4>
+                <h4 class="text-primary">{{ total_products }}</h4>
                 <p class="mb-0">Total Products</p>
             </div>
         </div>
@@ -28,7 +31,7 @@
     <div class="col-md-3">
         <div class="card text-center">
             <div class="card-body">
-                <h4 class="text-success">{{ products|dictsort:"is_active"|length }}</h4>
+                <h4 class="text-success">{{ active_products }}</h4>
                 <p class="mb-0">Active Listings</p>
             </div>
         </div>
@@ -36,7 +39,7 @@
     <div class="col-md-3">
         <div class="card text-center">
             <div class="card-body">
-                <h4 class="text-warning">{{ products|dictsort:"created_at"|slice:":7"|length }}</h4>
+                <h4 class="text-warning">{{ week_products }}</h4>
                 <p class="mb-0">This Week</p>
             </div>
         </div>
@@ -44,7 +47,7 @@
     <div class="col-md-3">
         <div class="card text-center">
             <div class="card-body">
-                <h4 class="text-info">{{ products|dictsort:"views"|slice:":1"|first.views|default:"0" }}</h4>
+                <h4 class="text-info">{{ most_views|default:"0" }}</h4>
                 <p class="mb-0">Most Views</p>
             </div>
         </div>
@@ -75,23 +78,23 @@
                                 <i class="fas fa-ellipsis-v"></i>
                             </button>
                             <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="{% url 'product_detail' product.id %}">
+                                <li><a class="dropdown-item" href="{% url 'frontend:product_detail' product.id %}">
                                     <i class="fas fa-eye"></i> View
                                 </a></li>
-                                <li><a class="dropdown-item" href="#" onclick="editProduct({{ product.id }})">
+                                <li><a class="dropdown-item" href="#" data-action="edit" data-product-id="{{ product.id }}">
                                     <i class="fas fa-edit"></i> Edit
                                 </a></li>
                                 <li><hr class="dropdown-divider"></li>
                                 {% if product.is_active %}
-                                <li><a class="dropdown-item text-warning" href="#" onclick="toggleProductStatus({{ product.id }}, false)">
+                                <li><a class="dropdown-item text-warning" href="#" data-action="toggle-status" data-product-id="{{ product.id }}" data-status="false">
                                     <i class="fas fa-pause"></i> Pause
                                 </a></li>
                                 {% else %}
-                                <li><a class="dropdown-item text-success" href="#" onclick="toggleProductStatus({{ product.id }}, true)">
+                                <li><a class="dropdown-item text-success" href="#" data-action="toggle-status" data-product-id="{{ product.id }}" data-status="true">
                                     <i class="fas fa-play"></i> Activate
                                 </a></li>
                                 {% endif %}
-                                <li><a class="dropdown-item text-danger" href="#" onclick="deleteProduct({{ product.id }})">
+                                <li><a class="dropdown-item text-danger" href="#" data-action="delete" data-product-id="{{ product.id }}">
                                     <i class="fas fa-trash"></i> Delete
                                 </a></li>
                             </ul>
@@ -125,12 +128,12 @@
                 <div class="card-footer bg-transparent">
                     <div class="row g-2">
                         <div class="col-6">
-                            <a href="{% url 'product_detail' product.id %}" class="btn btn-sm btn-outline-primary w-100">
+                            <a href="{% url 'frontend:product_detail' product.id %}" class="btn btn-sm btn-outline-primary w-100">
                                 <i class="fas fa-eye"></i> View
                             </a>
                         </div>
                         <div class="col-6">
-                            <button class="btn btn-sm btn-outline-secondary w-100" onclick="editProduct({{ product.id }})">
+                            <button class="btn btn-sm btn-outline-secondary w-100" data-action="edit" data-product-id="{{ product.id }}">
                                 <i class="fas fa-edit"></i> Edit
                             </button>
                         </div>
@@ -149,22 +152,22 @@
         <div class="card-body">
             <div class="row g-3">
                 <div class="col-md-3">
-                    <button class="btn btn-outline-success w-100" onclick="bulkAction('activate')">
+                    <button class="btn btn-outline-success w-100" data-bulk-action="activate">
                         <i class="fas fa-play"></i> Activate All
                     </button>
                 </div>
                 <div class="col-md-3">
-                    <button class="btn btn-outline-warning w-100" onclick="bulkAction('pause')">
+                    <button class="btn btn-outline-warning w-100" data-bulk-action="pause">
                         <i class="fas fa-pause"></i> Pause All
                     </button>
                 </div>
                 <div class="col-md-3">
-                    <button class="btn btn-outline-info w-100" onclick="bulkAction('export')">
+                    <button class="btn btn-outline-info w-100" data-bulk-action="export">
                         <i class="fas fa-download"></i> Export List
                     </button>
                 </div>
                 <div class="col-md-3">
-                    <button class="btn btn-outline-danger w-100" onclick="bulkAction('delete')">
+                    <button class="btn btn-outline-danger w-100" data-bulk-action="delete">
                         <i class="fas fa-trash"></i> Delete Selected
                     </button>
                 </div>
@@ -177,7 +180,7 @@
         <i class="fas fa-shopping-cart text-muted" style="font-size: 4rem;"></i>
         <h4 class="mt-3 text-muted">No products listed yet</h4>
         <p class="text-muted">Start selling your agricultural products to other farmers!</p>
-        <a href="{% url 'products' %}?action=create" class="btn btn-success btn-lg">
+        <a href="{% url 'frontend:products' %}?action=create" class="btn btn-success btn-lg">
             <i class="fas fa-plus"></i> List Your First Product
         </a>
     </div>
@@ -226,11 +229,118 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-danger" onclick="confirmDelete()">Delete Product</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Delete Product</button>
             </div>
         </div>
     </div>
 </div>
+
+<!-- Edit Product Modal -->
+{% if show_edit_form and edit_product %}
+<div class="modal fade show" id="editProductModal" tabindex="-1" style="display: block;" data-bs-backdrop="static">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-edit me-2"></i>
+                    Edit Product: {{ edit_product.name }}
+                </h5>
+                <a href="{% url 'frontend:my_products' %}" class="btn-close btn-close-white"></a>
+            </div>
+            <form method="post" enctype="multipart/form-data" action="{% url 'frontend:my_products' %}?action=edit&id={{ edit_product.id }}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="editName" class="form-label">Product Name *</label>
+                            <input type="text" class="form-control" id="editName" name="name" 
+                                   value="{{ edit_product.name }}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="editCategory" class="form-label">Category *</label>
+                            <select class="form-select" id="editCategory" name="category" required>
+                                {% for choice in categories %}
+                                    <option value="{{ choice.0 }}" {% if edit_product.category == choice.0 %}selected{% endif %}>
+                                        {{ choice.1 }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label for="editDescription" class="form-label">Description</label>
+                            <textarea class="form-control" id="editDescription" name="description" rows="3">{{ edit_product.description }}</textarea>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="editQuantity" class="form-label">Quantity *</label>
+                            <input type="number" class="form-control" id="editQuantity" name="quantity" 
+                                   value="{{ edit_product.quantity }}" min="1" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="editUnit" class="form-label">Unit *</label>
+                            <select class="form-select" id="editUnit" name="unit" required>
+                                <option value="kg" {% if edit_product.unit == 'kg' %}selected{% endif %}>Kilogram (kg)</option>
+                                <option value="g" {% if edit_product.unit == 'g' %}selected{% endif %}>Gram (g)</option>
+                                <option value="ton" {% if edit_product.unit == 'ton' %}selected{% endif %}>Ton</option>
+                                <option value="bag" {% if edit_product.unit == 'bag' %}selected{% endif %}>Bag</option>
+                                <option value="piece" {% if edit_product.unit == 'piece' %}selected{% endif %}>Piece</option>
+                                <option value="bunch" {% if edit_product.unit == 'bunch' %}selected{% endif %}>Bunch</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="editPrice" class="form-label">Price per Unit (MWK) *</label>
+                            <input type="number" class="form-control" id="editPrice" name="price_per_unit" 
+                                   value="{{ edit_product.price_per_unit }}" min="0" step="0.01" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="editHarvest" class="form-label">Harvest Date</label>
+                            <input type="date" class="form-control" id="editHarvest" name="harvest_date" 
+                                   value="{{ edit_product.harvest_date|date:'Y-m-d' }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="editLocation" class="form-label">Location *</label>
+                            <input type="text" class="form-control" id="editLocation" name="location" 
+                                   value="{{ edit_product.location }}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="editPhone" class="form-label">Contact Phone</label>
+                            <input type="tel" class="form-control" id="editPhone" name="contact_phone" 
+                                   value="{{ edit_product.contact_phone }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="editImages" class="form-label">Add New Images</label>
+                            <input type="file" class="form-control" id="editImages" name="images" 
+                                   accept="image/*" multiple>
+                            <div class="form-text">Leave empty to keep existing images</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Current Images -->
+                    {% if edit_product.images.all %}
+                    <div class="mt-3">
+                        <label class="form-label">Current Images:</label>
+                        <div class="row g-2">
+                            {% for image in edit_product.images.all %}
+                            <div class="col-md-3">
+                                <img src="{{ image.image.url }}" class="img-thumbnail" alt="Product image">
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="modal-footer">
+                    <a href="{% url 'frontend:my_products' %}" class="btn btn-secondary">
+                        <i class="fas fa-times me-2"></i>Cancel
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-2"></i>Update Product
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
 {% endblock %}
 
 {% block extra_css %}
@@ -255,12 +365,110 @@
 {% endblock %}
 
 {% block extra_js %}
+{% if show_edit_form %}
+<script>
+// Auto-show edit modal since we're in edit mode
+document.addEventListener('DOMContentLoaded', function() {
+    const editModal = new bootstrap.Modal(document.getElementById('editProductModal'));
+    editModal.show();
+});
+</script>
+{% endif %}
+
 <script>
 let productToDelete = null;
 
+// Add event listeners when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    
+    // Add event listeners for dropdown actions
+    document.addEventListener('click', function(e) {
+        if (e.target.closest('[data-action]')) {
+            e.preventDefault();
+            const element = e.target.closest('[data-action]');
+            const action = element.getAttribute('data-action');
+            const productId = element.getAttribute('data-product-id');
+            
+            switch(action) {
+                case 'edit':
+                    editProduct(productId);
+                    break;
+                case 'toggle-status':
+                    const status = element.getAttribute('data-status') === 'true';
+                    toggleProductStatus(productId, status);
+                    break;
+                case 'delete':
+                    deleteProduct(productId);
+                    break;
+            }
+        }
+        
+        // Handle bulk actions
+        if (e.target.closest('[data-bulk-action]')) {
+            e.preventDefault();
+            const action = e.target.closest('[data-bulk-action]').getAttribute('data-bulk-action');
+            bulkAction(action);
+        }
+    });
+    
+    // Add event listener for confirm delete button
+    document.getElementById('confirmDeleteBtn').addEventListener('click', confirmDelete);
+});
+
+// Helper function to get CSRF token
+function getCsrfToken() {
+    // Try to get from meta tag first
+    const metaToken = document.querySelector('meta[name="csrf-token"]');
+    if (metaToken) {
+        return metaToken.getAttribute('content');
+    }
+    
+    // Fallback to form input
+    const formToken = document.querySelector('[name=csrfmiddlewaretoken]');
+    if (formToken) {
+        return formToken.value;
+    }
+    
+    // Fallback to cookie
+    const cookies = document.cookie.split(';');
+    for (let cookie of cookies) {
+        const [name, value] = cookie.trim().split('=');
+        if (name === 'csrftoken') {
+            return value;
+        }
+    }
+    
+    console.error('CSRF token not found');
+    return null;
+}
+
+// Helper function to show messages
+function showMessage(message, type = 'info') {
+    // Create a Bootstrap alert
+    const alertClass = type === 'error' ? 'alert-danger' : type === 'success' ? 'alert-success' : 'alert-info';
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert ${alertClass} alert-dismissible fade show`;
+    alertDiv.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    // Insert at the top of the main content area
+    const mainContent = document.querySelector('.container-fluid') || document.querySelector('.container') || document.querySelector('main') || document.body;
+    const firstChild = mainContent.querySelector('.row') || mainContent.firstChild;
+    mainContent.insertBefore(alertDiv, firstChild);
+    
+    // Auto-dismiss after 5 seconds
+    setTimeout(() => {
+        if (alertDiv.parentNode) {
+            alertDiv.remove();
+        }
+    }, 5000);
+}
+
 function editProduct(productId) {
-    // Redirect to edit page or show edit modal
-    window.location.href = `{% url 'products' %}?action=edit&id=${productId}`;
+    // Redirect to edit page with proper edit functionality
+    window.location.href = '{% url "frontend:my_products" %}?action=edit&id=' + productId;
 }
 
 function toggleProductStatus(productId, activate) {
@@ -268,35 +476,57 @@ function toggleProductStatus(productId, activate) {
     const message = activate ? 'activate' : 'pause';
     
     if (confirm(`Are you sure you want to ${message} this product?`)) {
-        // This would make an API call to update the product status
-        fetch(`/api/v1/products/${productId}/`, {
+        // Get CSRF token from cookie or meta tag
+        const csrfToken = getCsrfToken();
+        
+        if (!csrfToken) {
+            showMessage('Authentication error. Please refresh the page and try again.', 'error');
+            return;
+        }
+        
+        // Show loading state
+        showMessage(`${action === 'activate' ? 'Activating' : 'Pausing'} product...`, 'info');
+        
+        // Make API call to update the product status
+        fetch(`/api/v1/products/${productId}`, {
             method: 'PATCH',
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                'X-CSRFToken': csrfToken,
+                'X-Requested-With': 'XMLHttpRequest'  // Important for Django to recognize AJAX
             },
+            credentials: 'same-origin',  // Include cookies
             body: JSON.stringify({
                 is_active: activate
             })
         })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                location.reload();
+        .then(response => {
+            console.log('Response status:', response.status);
+            if (response.ok) {
+                return response.json();
+            } else if (response.status === 403) {
+                throw new Error('You do not have permission to modify this product.');
+            } else if (response.status === 401) {
+                throw new Error('Authentication required. Please log in again.');
             } else {
-                alert('Error updating product status');
+                throw new Error(`Failed to update product status: ${response.status} ${response.statusText}`);
             }
+        })
+        .then(data => {
+            // Show success message
+            showMessage(`Product ${action}d successfully!`, 'success');
+            setTimeout(() => location.reload(), 1000);
         })
         .catch(error => {
             console.error('Error:', error);
-            alert('Error updating product status');
+            showMessage(error.message || 'Error updating product status. Please try again.', 'error');
         });
     }
 }
 
 function deleteProduct(productId) {
-    // Get product name for confirmation
-    const productCard = document.querySelector(`[onclick="deleteProduct(${productId})"]`).closest('.product-card');
+    // Find the product card to get product name
+    const productCard = document.querySelector(`[data-product-id="${productId}"][data-action="delete"]`).closest('.product-card');
     const productName = productCard.querySelector('.card-title').textContent;
     
     document.getElementById('deleteProductName').textContent = productName;
@@ -308,28 +538,47 @@ function deleteProduct(productId) {
 
 function confirmDelete() {
     if (productToDelete) {
-        // This would make an API call to delete the product
-        fetch(`/api/v1/products/${productToDelete}/`, {
+        // Get CSRF token
+        const csrfToken = getCsrfToken();
+        
+        if (!csrfToken) {
+            showMessage('Authentication error. Please refresh the page and try again.', 'error');
+            return;
+        }
+        
+        // Show loading state
+        showMessage('Deleting product...', 'info');
+        
+        // Make API call to delete the product
+        fetch(`/api/v1/products/${productToDelete}`, {
             method: 'DELETE',
             headers: {
-                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-            }
+                'X-CSRFToken': csrfToken,
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            credentials: 'same-origin'
         })
         .then(response => {
-            if (response.ok) {
-                location.reload();
+            console.log('Delete response status:', response.status);
+            if (response.ok || response.status === 204) {
+                // Hide modal and reload page
+                const modal = bootstrap.Modal.getInstance(document.getElementById('deleteProductModal'));
+                modal.hide();
+                showMessage('Product deleted successfully!', 'success');
+                setTimeout(() => location.reload(), 1000);
+            } else if (response.status === 403) {
+                throw new Error('You do not have permission to delete this product.');
+            } else if (response.status === 401) {
+                throw new Error('Authentication required. Please log in again.');
             } else {
-                alert('Error deleting product');
+                throw new Error(`Failed to delete product: ${response.status} ${response.statusText}`);
             }
         })
         .catch(error => {
             console.error('Error:', error);
-            alert('Error deleting product');
+            showMessage(error.message || 'Error deleting product. Please try again.', 'error');
         });
     }
-    
-    const modal = bootstrap.Modal.getInstance(document.getElementById('deleteProductModal'));
-    modal.hide();
 }
 
 function bulkAction(action) {
@@ -366,7 +615,32 @@ function bulkAction(action) {
 
 function bulkUpdateStatus(productIds, activate) {
     // Implementation for bulk status update
-    console.log(`${action} products:`, productIds);
+    const action = activate ? 'activate' : 'pause';
+    const csrfToken = getCsrfToken();
+    
+    productIds.forEach(productId => {
+        fetch(`/api/v1/products/${productId}`, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            },
+            body: JSON.stringify({
+                is_active: activate
+            })
+        })
+        .then(response => {
+            if (!response.ok) {
+                console.error(`Failed to ${action} product ${productId}`);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    });
+    
+    // Reload page after all requests
+    setTimeout(() => location.reload(), 1000);
 }
 
 function exportProductList(productIds) {
@@ -376,7 +650,27 @@ function exportProductList(productIds) {
 
 function bulkDeleteProducts(productIds) {
     // Implementation for bulk delete
-    console.log('Deleting products:', productIds);
+    const csrfToken = getCsrfToken();
+    
+    productIds.forEach(productId => {
+        fetch(`/api/v1/products/${productId}`, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRFToken': csrfToken
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                console.error(`Failed to delete product ${productId}`);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    });
+    
+    // Reload page after all requests
+    setTimeout(() => location.reload(), 1000);
 }
 </script>
 {% endblock %}

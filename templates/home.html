@@ -7,7 +7,7 @@
 <section class="hero-section text-center">
     <div class="container">
         <h1 class="display-4 mb-4">
-            <i class="fas fa-seedling"></i> Mlimi App
+             Mlimi App
         </h1>
         <p class="lead mb-4">Your Digital Agricultural Assistant for Better Farming in Malawi</p>
         <div class="row justify-content-center">
@@ -30,7 +30,7 @@
                         <a href="{% url 'frontend:products' %}" class="btn btn-light btn-lg me-md-2">
                             <i class="fas fa-shopping-cart"></i> Browse Products
                         </a>
-                        <a href="{% url 'frontend:pest_detection' %}" class="btn btn-outline-light btn-lg">
+                        <a href="{% url 'frontend:pest_diagnosis' %}" class="btn btn-outline-light btn-lg">
                             <i class="fas fa-bug"></i> Detect Pests
                         </a>
                     </div>
@@ -104,7 +104,7 @@
                             Upload photos of your crops to get AI-powered pest and disease diagnosis 
                             with treatment recommendations.
                         </p>
-                        <a href="{% url 'frontend:pest_detection' %}" class="btn btn-primary">Detect Pests</a>
+                        <a href="{% url 'frontend:pest_diagnosis' %}" class="btn btn-primary">Detect Pests</a>
                     </div>
                 </div>
             </div>
@@ -136,7 +136,7 @@
                             Receive expert farming tips, market trends, and seasonal advice 
                             to improve your agricultural practices.
                         </p>
-                        <a href="{% url 'frontend:newsletters' %}" class="btn btn-primary">Read Newsletters</a>
+                        <a href="{% url 'frontend:newsletter' %}" class="btn btn-primary">Read Newsletters</a>
                     </div>
                 </div>
             </div>
@@ -156,7 +156,7 @@
                 </a>
             </div>
             <div class="col-md-3">
-                <a href="{% url 'frontend:pest_detection' %}" class="btn btn-warning w-100">
+                <a href="{% url 'frontend:pest_diagnosis' %}" class="btn btn-warning w-100">
                     <i class="fas fa-camera"></i> Check Crop Health
                 </a>
             </div>

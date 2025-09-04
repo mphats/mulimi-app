@@ -2,6 +2,7 @@ from rest_framework import status, generics, permissions
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework import generics, permissions, status
 from django.shortcuts import get_object_or_404
 from django.db.models import Q
 from django.utils import timezone
@@ -10,7 +11,8 @@ import json
 import os
 from .models import (
     Product, ProductImage, MarketPrice, WeatherData, 
-    Newsletter, CommunityPost, CommunityReply, PestDiagnosis
+    Newsletter, CommunityPost, CommunityReply, PestDiagnosis,
+    PostLike, PostView, PostShare, ReplyLike
 )
 from .serializers import (
     ProductSerializer, ProductCreateSerializer, ProductImageSerializer,
@@ -222,6 +224,212 @@ class CommunityReplyCreateView(generics.CreateAPIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+# Post Interaction Views
+class PostLikeView(APIView):
+    """Handle liking/unliking posts"""
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def post(self, request, post_id):
+        post = get_object_or_404(CommunityPost, id=post_id)
+        like, created = PostLike.objects.get_or_create(
+            user=request.user,
+            post=post
+        )
+        
+        if created:
+            return Response({
+                'liked': True,
+                'like_count': post.get_like_count(),
+                'message': 'Post liked successfully'
+            }, status=status.HTTP_201_CREATED)
+        else:
+            return Response({
+                'liked': True,
+                'like_count': post.get_like_count(),
+                'message': 'Already liked'
+            }, status=status.HTTP_200_OK)
+    
+    def delete(self, request, post_id):
+        post = get_object_or_404(CommunityPost, id=post_id)
+        try:
+            like = PostLike.objects.get(user=request.user, post=post)
+            like.delete()
+            return Response({
+                'liked': False,
+                'like_count': post.get_like_count(),
+                'message': 'Post unliked successfully'
+            }, status=status.HTTP_200_OK)
+        except PostLike.DoesNotExist:
+            return Response({
+                'liked': False,
+                'like_count': post.get_like_count(),
+                'message': 'Not liked yet'
+            }, status=status.HTTP_200_OK)
+
+class PostShareView(APIView):
+    """Handle post sharing"""
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def post(self, request, post_id):
+        post = get_object_or_404(CommunityPost, id=post_id)
+        method = request.data.get('method', 'link')
+        
+        # Validate share method
+        valid_methods = [choice[0] for choice in PostShare.SHARE_METHODS]
+        if method not in valid_methods:
+            return Response({
+                'error': 'Invalid share method'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Create share record
+        share = PostShare.objects.create(
+            user=request.user,
+            post=post,
+            method=method
+        )
+        
+        # Generate share URLs based on method
+        base_url = request.build_absolute_uri(f'/community/{post_id}/')
+        share_urls = {
+            'link': base_url,
+            'whatsapp': f'https://wa.me/?text=Check out this post: {base_url}',
+            'facebook': f'https://www.facebook.com/sharer/sharer.php?u={base_url}',
+            'twitter': f'https://twitter.com/intent/tweet?url={base_url}&text={post.title}',
+            'email': f'mailto:?subject={post.title}&body=Check out this post: {base_url}'
+        }
+        
+        return Response({
+            'shared': True,
+            'share_count': post.get_share_count(),
+            'share_url': share_urls.get(method, base_url),
+            'message': f'Post shared via {method}'
+        }, status=status.HTTP_201_CREATED)
+
+class PostViewTrackingView(APIView):
+    """Handle post view tracking"""
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def post(self, request, post_id):
+        post = get_object_or_404(CommunityPost, id=post_id)
+        
+        # Create or update view record
+        view, created = PostView.objects.get_or_create(
+            user=request.user,
+            post=post,
+            defaults={'is_read': True}
+        )
+        
+        if not created:
+            view.is_read = True
+            view.viewed_at = timezone.now()
+            view.save()
+        
+        return Response({
+            'viewed': True,
+            'view_count': post.get_view_count(),
+            'is_read': view.is_read,
+            'message': 'Post marked as viewed'
+        }, status=status.HTTP_200_OK)
+
+class ReplyLikeView(APIView):
+    """Handle liking/unliking replies"""
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def post(self, request, reply_id):
+        reply = get_object_or_404(CommunityReply, id=reply_id)
+        like, created = ReplyLike.objects.get_or_create(
+            user=request.user,
+            reply=reply
+        )
+        
+        if created:
+            return Response({
+                'liked': True,
+                'like_count': reply.get_like_count(),
+                'message': 'Reply liked successfully'
+            }, status=status.HTTP_201_CREATED)
+        else:
+            return Response({
+                'liked': True,
+                'like_count': reply.get_like_count(),
+                'message': 'Already liked'
+            }, status=status.HTTP_200_OK)
+    
+    def delete(self, request, reply_id):
+        reply = get_object_or_404(CommunityReply, id=reply_id)
+        try:
+            like = ReplyLike.objects.get(user=request.user, reply=reply)
+            like.delete()
+            return Response({
+                'liked': False,
+                'like_count': reply.get_like_count(),
+                'message': 'Reply unliked successfully'
+            }, status=status.HTTP_200_OK)
+        except ReplyLike.DoesNotExist:
+            return Response({
+                'liked': False,
+                'like_count': reply.get_like_count(),
+                'message': 'Not liked yet'
+            }, status=status.HTTP_200_OK)
+
+class MarkReplyAsSolutionView(APIView):
+    """Handle marking replies as solutions"""
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def post(self, request, reply_id):
+        reply = get_object_or_404(CommunityReply, id=reply_id)
+        post = reply.post
+        
+        # Only post author can mark replies as solutions
+        if request.user != post.author:
+            return Response({
+                'error': 'Only the post author can mark replies as solutions'
+            }, status=status.HTTP_403_FORBIDDEN)
+        
+        # Unmark other replies as solutions for this post
+        CommunityReply.objects.filter(post=post, is_solution=True).update(is_solution=False)
+        
+        # Mark this reply as solution
+        reply.is_solution = True
+        reply.save()
+        
+        # Mark post as resolved if it's a question
+        if post.is_question:
+            post.is_resolved = True
+            post.save()
+        
+        return Response({
+            'marked_as_solution': True,
+            'post_resolved': post.is_resolved,
+            'message': 'Reply marked as solution'
+        }, status=status.HTTP_200_OK)
+    
+    def delete(self, request, reply_id):
+        reply = get_object_or_404(CommunityReply, id=reply_id)
+        post = reply.post
+        
+        # Only post author can unmark solutions
+        if request.user != post.author:
+            return Response({
+                'error': 'Only the post author can unmark solutions'
+            }, status=status.HTTP_403_FORBIDDEN)
+        
+        # Unmark as solution
+        reply.is_solution = False
+        reply.save()
+        
+        # Check if post should still be resolved
+        has_other_solutions = CommunityReply.objects.filter(post=post, is_solution=True).exists()
+        if not has_other_solutions:
+            post.is_resolved = False
+            post.save()
+        
+        return Response({
+            'marked_as_solution': False,
+            'post_resolved': post.is_resolved,
+            'message': 'Reply unmarked as solution'
+        }, status=status.HTTP_200_OK)
+
 # Pest Detection Views
 class PestDiagnosisView(APIView):
     permission_classes = [permissions.IsAuthenticated]
@@ -349,7 +557,8 @@ def market_analysis(request):
         
         analysis_result = {
             'predictedPrice': 1500.0,  # MWK per unit
-            'trend': 'Stable with slight upward movement'
+            'market': f'Predicted market analysis for {crop_type} in {district}',
+            'recommendation': 'Monitor local market conditions for best pricing'
         }
         
         return Response(analysis_result)
@@ -359,3 +568,30 @@ def market_analysis(request):
             {'error': str(e)}, 
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
+
+# Health Check Endpoint
+@api_view(['GET'])
+@permission_classes([permissions.AllowAny])
+def health_check(request):
+    """Health check endpoint for connectivity monitoring"""
+    try:
+        # Check database connectivity by making a simple query
+        from django.db import connection
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT 1")
+        
+        return Response({
+            'status': 'healthy',
+            'timestamp': timezone.now().isoformat(),
+            'version': '1.0.0',
+            'database': 'connected',
+            'message': 'Django backend is running successfully'
+        }, status=status.HTTP_200_OK)
+        
+    except Exception as e:
+        return Response({
+            'status': 'unhealthy',
+            'timestamp': timezone.now().isoformat(),
+            'error': str(e),
+            'message': 'Django backend has issues'
+        }, status=status.HTTP_503_SERVICE_UNAVAILABLE)

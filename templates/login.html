@@ -78,29 +78,7 @@
                     </a>
                 </div>
                 
-                <!-- Magic Link Login -->
-                <div class="mt-4">
-                    <div class="card border-info">
-                        <div class="card-header bg-info text-white">
-                            <h6 class="mb-0"><i class="fas fa-magic"></i> Passwordless Login</h6>
-                        </div>
-                        <div class="card-body">
-                            <p class="small text-muted mb-2">
-                                Get a magic link sent to your email for instant access
-                            </p>
-                            <form method="POST" action="{% url 'magic_link_login' %}" id="magicLinkForm">
-                                {% csrf_token %}
-                                <div class="input-group">
-                                    <input type="email" name="email" class="form-control" 
-                                           placeholder="Enter your email" required>
-                                    <button class="btn btn-info" type="submit">
-                                        <i class="fas fa-paper-plane"></i> Send Link
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                </div>
+
             </div>
         </div>
         

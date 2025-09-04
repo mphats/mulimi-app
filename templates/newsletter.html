@@ -1,0 +1,309 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Newsletter - Agri AI{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header Section -->
+    <div class="row bg-success text-white py-4">
+        <div class="col-12">
+            <div class="text-center">
+                <h1 class="mb-3">
+                    <i class="fas fa-newspaper me-3"></i>Newsletter Subscription
+                </h1>
+                <p class="lead mb-0">Stay updated with the latest farming tips, market trends, and agricultural insights</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <!-- Main Content -->
+        <div class="col-lg-8">
+            <!-- Subscription Form -->
+            <div class="card mb-4">
+                <div class="card-header bg-success text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-envelope me-2"></i>Subscribe to Our Newsletter
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form method="POST" class="needs-validation" novalidate>
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="email" class="form-label">
+                                    <i class="fas fa-envelope me-1"></i>Email Address *
+                                </label>
+                                <input type="email" class="form-control" id="email" name="email" 
+                                       placeholder="your.email@example.com" required>
+                                <div class="invalid-feedback">
+                                    Please provide a valid email address.
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="category" class="form-label">
+                                    <i class="fas fa-tag me-1"></i>Category of Interest *
+                                </label>
+                                <select class="form-select" id="category" name="category" required>
+                                    <option value="">Choose a category...</option>
+                                    {% for value, label in categories %}
+                                    <option value="{{ value }}">{{ label }}</option>
+                                    {% endfor %}
+                                </select>
+                                <div class="invalid-feedback">
+                                    Please select a category.
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="agree" required>
+                                <label class="form-check-label" for="agree">
+                                    I agree to receive newsletters and updates from Agri AI
+                                </label>
+                                <div class="invalid-feedback">
+                                    You must agree before subscribing.
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-success btn-lg">
+                            <i class="fas fa-paper-plane me-2"></i>Subscribe Now
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Newsletter Categories -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-list me-2"></i>Newsletter Categories
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for value, label in categories %}
+                        <div class="col-md-6 mb-3">
+                            <div class="d-flex align-items-center p-3 border rounded">
+                                <div class="me-3">
+                                    {% if value == 'tips' %}
+                                    <i class="fas fa-lightbulb fa-2x text-warning"></i>
+                                    {% elif value == 'market_trends' %}
+                                    <i class="fas fa-chart-line fa-2x text-primary"></i>
+                                    {% elif value == 'seasonal_advice' %}
+                                    <i class="fas fa-calendar-alt fa-2x text-success"></i>
+                                    {% elif value == 'pest_control' %}
+                                    <i class="fas fa-bug fa-2x text-danger"></i>
+                                    {% elif value == 'weather' %}
+                                    <i class="fas fa-cloud-sun fa-2x text-info"></i>
+                                    {% elif value == 'technology' %}
+                                    <i class="fas fa-microchip fa-2x text-secondary"></i>
+                                    {% elif value == 'success_stories' %}
+                                    <i class="fas fa-star fa-2x text-warning"></i>
+                                    {% else %}
+                                    <i class="fas fa-newspaper fa-2x text-muted"></i>
+                                    {% endif %}
+                                </div>
+                                <div>
+                                    <h6 class="mb-1">{{ label }}</h6>
+                                    <small class="text-muted">
+                                        {% if value == 'tips' %}
+                                        Practical farming tips and techniques
+                                        {% elif value == 'market_trends' %}
+                                        Latest market prices and trends
+                                        {% elif value == 'seasonal_advice' %}
+                                        Seasonal farming recommendations
+                                        {% elif value == 'pest_control' %}
+                                        Pest and disease management
+                                        {% elif value == 'weather' %}
+                                        Weather forecasts and alerts
+                                        {% elif value == 'technology' %}
+                                        Agricultural technology updates
+                                        {% elif value == 'success_stories' %}
+                                        Farmer success stories and case studies
+                                        {% else %}
+                                        General agricultural information
+                                        {% endif %}
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Benefits Section -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-gift me-2"></i>Why Subscribe?
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <div class="d-flex">
+                                <div class="flex-shrink-0">
+                                    <i class="fas fa-check-circle text-success fa-lg me-3"></i>
+                                </div>
+                                <div>
+                                    <h6>Expert Advice</h6>
+                                    <p class="text-muted mb-0">Get insights from agricultural experts and experienced farmers</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="d-flex">
+                                <div class="flex-shrink-0">
+                                    <i class="fas fa-check-circle text-success fa-lg me-3"></i>
+                                </div>
+                                <div>
+                                    <h6>Market Updates</h6>
+                                    <p class="text-muted mb-0">Stay informed about current market prices and trends</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="d-flex">
+                                <div class="flex-shrink-0">
+                                    <i class="fas fa-check-circle text-success fa-lg me-3"></i>
+                                </div>
+                                <div>
+                                    <h6>Weather Alerts</h6>
+                                    <p class="text-muted mb-0">Receive timely weather forecasts and farming alerts</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="d-flex">
+                                <div class="flex-shrink-0">
+                                    <i class="fas fa-check-circle text-success fa-lg me-3"></i>
+                                </div>
+                                <div>
+                                    <h6>Success Stories</h6>
+                                    <p class="text-muted mb-0">Learn from other farmers' experiences and achievements</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Recent Subscriptions -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-users me-2"></i>Recent Subscribers
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if subscriptions %}
+                    {% for subscription in subscriptions %}
+                    <div class="d-flex align-items-center mb-2">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-user-circle text-primary"></i>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h6 class="mb-0">{{ subscription.email|truncatechars:20 }}</h6>
+                            <small class="text-muted">{{ subscription.get_category_display }}</small>
+                        </div>
+                        <small class="text-muted">{{ subscription.subscribed_at|timesince }} ago</small>
+                    </div>
+                    {% endfor %}
+                    {% else %}
+                    <p class="text-muted text-center">No recent subscriptions</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Newsletter Stats -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-chart-pie me-2"></i>Newsletter Stats
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <h4 class="text-success">{{ subscriptions.count|default:0 }}</h4>
+                            <small class="text-muted">Total Subscribers</small>
+                        </div>
+                        <div class="col-6">
+                            <h4 class="text-primary">{{ categories|length }}</h4>
+                            <small class="text-muted">Categories</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contact Information -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-info-circle me-2"></i>Need Help?
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">Have questions about our newsletter or want to unsubscribe?</p>
+                    <div class="d-grid gap-2">
+                        <a href="mailto:support@agriai.com" class="btn btn-outline-primary">
+                            <i class="fas fa-envelope me-2"></i>Contact Support
+                        </a>
+                        <a href="#" class="btn btn-outline-secondary">
+                            <i class="fas fa-question-circle me-2"></i>FAQ
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Form validation
+(function() {
+    'use strict';
+    window.addEventListener('load', function() {
+        var forms = document.getElementsByClassName('needs-validation');
+        var validation = Array.prototype.filter.call(forms, function(form) {
+            form.addEventListener('submit', function(event) {
+                if (form.checkValidity() === false) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                form.classList.add('was-validated');
+            }, false);
+        });
+    }, false);
+})();
+</script>
+
+<style>
+.card {
+    border: none;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.card-header {
+    border-bottom: 2px solid #f8f9fa;
+}
+
+.btn-success {
+    background: linear-gradient(45deg, #28a745, #20c997);
+    border: none;
+}
+
+.btn-success:hover {
+    background: linear-gradient(45deg, #218838, #1ea085);
+    transform: translateY(-1px);
+}
+</style>
+{% endblock %}

@@ -113,7 +113,7 @@
                     <button type="submit" class="btn btn-success">
                         <i class="fas fa-save"></i> List Product
                     </button>
-                    <a href="{% url 'products' %}" class="btn btn-secondary">
+                    <a href="{% url 'frontend:products' %}" class="btn btn-secondary">
                         <i class="fas fa-times"></i> Cancel
                     </a>
                 </div>
@@ -151,7 +151,7 @@
                 <div class="card-footer bg-transparent">
                     <div class="d-flex justify-content-between align-items-center">
                         <small class="text-muted">By {{ product.seller.username }}</small>
-                        <a href="{% url 'product_detail' product.id %}" class="btn btn-sm btn-outline-primary">
+                        <a href="{% url 'frontend:product_detail' product.id %}" class="btn btn-sm btn-outline-primary">
                             View Details
                         </a>
                     </div>

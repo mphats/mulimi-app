@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+
+{% block title %}Contact Us - Agri AI{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="text-center mb-4">
+                <h1><i class="fas fa-envelope"></i> Contact Us</h1>
+                <p class="text-muted">Have questions or feedback? We'd love to hear from you.</p>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-paper-plane"></i> Send us a message</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" class="row g-3">
+                        {% csrf_token %}
+
+                        <div class="col-md-6">
+                            <label class="form-label">Name *</label>
+                            <input type="text" name="name" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Email *</label>
+                            <input type="email" name="email" class="form-control" required>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Subject *</label>
+                            <input type="text" name="subject" class="form-control" required>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Message *</label>
+                            <textarea name="message" rows="6" class="form-control" required></textarea>
+                        </div>
+                        <div class="col-12 text-end">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-paper-plane"></i> Send Message
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-info-circle"></i> Contact Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p class="mb-1"><strong>Email:</strong> support@mlimiapp.com</p>
+                            <p class="mb-1"><strong>Phone:</strong> +265 123 456 789</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p class="mb-1"><strong>Hours:</strong> Mon - Fri, 8:00 - 17:00</p>
+                            <p class="mb-1"><strong>Location:</strong> Blantyre, Malawi</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

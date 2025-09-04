@@ -86,9 +86,19 @@ class WeatherData(models.Model):
         return f"Weather for {self.location} on {self.forecast_date}"
 
 class Newsletter(models.Model):
+    CATEGORY_CHOICES = [
+        ('tips', 'Farming Tips'),
+        ('market_trends', 'Market Trends'),
+        ('seasonal_advice', 'Seasonal Advice'),
+        ('pest_control', 'Pest Control'),
+        ('weather', 'Weather Updates'),
+        ('technology', 'Agricultural Technology'),
+        ('success_stories', 'Success Stories'),
+    ]
+    
     title = models.CharField(max_length=200)
     content = models.TextField()
-    category = models.CharField(max_length=50)  # Tips, Market Trends, Seasonal Advice
+    category = models.CharField(max_length=50, choices=CATEGORY_CHOICES)
     language = models.CharField(max_length=10, choices=[('EN', 'English'), ('CH', 'Chichewa')])
     is_published = models.BooleanField(default=False)
     published_at = models.DateTimeField(null=True, blank=True)
@@ -101,11 +111,44 @@ class Newsletter(models.Model):
     def __str__(self):
         return f"{self.title} ({self.language})"
 
+class NewsletterSubscription(models.Model):
+    CATEGORY_CHOICES = [
+        ('tips', 'Farming Tips'),
+        ('market_trends', 'Market Trends'),
+        ('seasonal_advice', 'Seasonal Advice'),
+        ('pest_control', 'Pest Control'),
+        ('weather', 'Weather Updates'),
+        ('technology', 'Agricultural Technology'),
+        ('success_stories', 'Success Stories'),
+    ]
+    
+    email = models.EmailField(unique=True)
+    category = models.CharField(max_length=50, choices=CATEGORY_CHOICES)
+    is_active = models.BooleanField(default=True)
+    subscribed_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-subscribed_at']
+
+    def __str__(self):
+        return f"{self.email} - {self.category}"
+
 class CommunityPost(models.Model):
+    CATEGORY_CHOICES = [
+        ('question', 'Question'),
+        ('advice', 'Advice'),
+        ('discussion', 'Discussion'),
+        ('experience', 'Experience Sharing'),
+        ('problem', 'Problem'),
+        ('solution', 'Solution'),
+        ('general', 'General'),
+    ]
+    
     author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='community_posts')
     title = models.CharField(max_length=200)
     content = models.TextField()
-    category = models.CharField(max_length=50)  # Question, Advice, Discussion
+    category = models.CharField(max_length=50, choices=CATEGORY_CHOICES)
     is_question = models.BooleanField(default=False)
     is_resolved = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -116,6 +159,30 @@ class CommunityPost(models.Model):
 
     def __str__(self):
         return f"{self.title} by {self.author.username}"
+    
+    def get_like_count(self):
+        """Return the number of likes for this post"""
+        return self.likes.count()
+    
+    def get_view_count(self):
+        """Return the number of views for this post"""
+        return self.views.count()
+    
+    def get_share_count(self):
+        """Return the number of shares for this post"""
+        return self.shares.count()
+    
+    def is_liked_by(self, user):
+        """Check if the post is liked by a specific user"""
+        if user.is_authenticated:
+            return self.likes.filter(user=user).exists()
+        return False
+    
+    def is_viewed_by(self, user):
+        """Check if the post is viewed by a specific user"""
+        if user.is_authenticated:
+            return self.views.filter(user=user).exists()
+        return False
 
 class CommunityReply(models.Model):
     post = models.ForeignKey(CommunityPost, on_delete=models.CASCADE, related_name='replies')
@@ -130,6 +197,16 @@ class CommunityReply(models.Model):
 
     def __str__(self):
         return f"Reply to {self.post.title} by {self.author.username}"
+    
+    def get_like_count(self):
+        """Return the number of likes for this reply"""
+        return self.likes.count()
+    
+    def is_liked_by(self, user):
+        """Check if the reply is liked by a specific user"""
+        if user.is_authenticated:
+            return self.likes.filter(user=user).exists()
+        return False
 
 class PestDiagnosis(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='pest_diagnoses')
@@ -143,3 +220,64 @@ class PestDiagnosis(models.Model):
 
     def __str__(self):
         return f"Pest diagnosis for {self.crop_type} by {self.user.username}"
+
+class PostLike(models.Model):
+    """Model to track user likes on community posts"""
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='post_likes')
+    post = models.ForeignKey(CommunityPost, on_delete=models.CASCADE, related_name='likes')
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        unique_together = ('user', 'post')  # Prevent duplicate likes
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return f"{self.user.username} likes {self.post.title}"
+
+class PostView(models.Model):
+    """Model to track post views and read status"""
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='post_views')
+    post = models.ForeignKey(CommunityPost, on_delete=models.CASCADE, related_name='views')
+    viewed_at = models.DateTimeField(auto_now_add=True)
+    is_read = models.BooleanField(default=True)  # Mark as read when viewed
+    
+    class Meta:
+        unique_together = ('user', 'post')  # One view record per user per post
+        ordering = ['-viewed_at']
+    
+    def __str__(self):
+        return f"{self.user.username} viewed {self.post.title}"
+
+class PostShare(models.Model):
+    """Model to track post shares"""
+    SHARE_METHODS = [
+        ('link', 'Copy Link'),
+        ('whatsapp', 'WhatsApp'),
+        ('facebook', 'Facebook'),
+        ('twitter', 'Twitter'),
+        ('email', 'Email'),
+    ]
+    
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='post_shares')
+    post = models.ForeignKey(CommunityPost, on_delete=models.CASCADE, related_name='shares')
+    method = models.CharField(max_length=20, choices=SHARE_METHODS)
+    shared_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        ordering = ['-shared_at']
+    
+    def __str__(self):
+        return f"{self.user.username} shared {self.post.title} via {self.method}"
+
+class ReplyLike(models.Model):
+    """Model to track user likes on community replies"""
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='reply_likes')
+    reply = models.ForeignKey(CommunityReply, on_delete=models.CASCADE, related_name='likes')
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        unique_together = ('user', 'reply')  # Prevent duplicate likes
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return f"{self.user.username} likes reply by {self.reply.author.username}"

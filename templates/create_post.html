@@ -1,0 +1,207 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Create Post - Community{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2>
+                        <i class="fas fa-edit me-2"></i>Create New Post
+                    </h2>
+                    <p class="text-muted">Share your thoughts, ask questions, or provide advice to the community</p>
+                </div>
+                <a href="{% url 'frontend:community' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Community
+                </a>
+            </div>
+
+            <!-- Create Post Form -->
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-plus me-2"></i>New Community Post
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" class="needs-validation" novalidate>
+                        {% csrf_token %}
+                        
+                        <!-- Title -->
+                        <div class="mb-3">
+                            <label for="title" class="form-label">
+                                <i class="fas fa-heading me-1"></i>Title *
+                            </label>
+                            <input type="text" class="form-control" id="title" name="title" 
+                                   placeholder="Enter a descriptive title for your post" required>
+                            <div class="invalid-feedback">
+                                Please provide a title for your post.
+                            </div>
+                        </div>
+
+                        <!-- Category -->
+                        <div class="mb-3">
+                            <label for="category" class="form-label">
+                                <i class="fas fa-tag me-1"></i>Category *
+                            </label>
+                            <select class="form-select" id="category" name="category" required>
+                                <option value="">Choose a category...</option>
+                                {% for value, label in categories %}
+                                <option value="{{ value }}">{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                            <div class="invalid-feedback">
+                                Please select a category.
+                            </div>
+                        </div>
+
+                        <!-- Content -->
+                        <div class="mb-3">
+                            <label for="content" class="form-label">
+                                <i class="fas fa-align-left me-1"></i>Content *
+                            </label>
+                            <textarea class="form-control" id="content" name="content" rows="8" 
+                                      placeholder="Share your thoughts, questions, or advice here..." required></textarea>
+                            <div class="invalid-feedback">
+                                Please provide content for your post.
+                            </div>
+                            <div class="form-text">
+                                <small class="text-muted">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Be clear and specific. Include relevant details to help others understand your post.
+                                </small>
+                            </div>
+                        </div>
+
+                        <!-- Is Question Checkbox -->
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="is_question" name="is_question">
+                                <label class="form-check-label" for="is_question">
+                                    <i class="fas fa-question-circle me-1"></i>
+                                    This is a question (will be marked with a question badge)
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Submit Buttons -->
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'frontend:community' %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times me-2"></i>Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-paper-plane me-2"></i>Create Post
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Guidelines -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-lightbulb me-2"></i>Community Guidelines
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="text-success">
+                                <i class="fas fa-check-circle me-1"></i>Do's
+                            </h6>
+                            <ul class="list-unstyled">
+                                <li><i class="fas fa-arrow-right text-success me-2"></i>Be respectful and helpful</li>
+                                <li><i class="fas fa-arrow-right text-success me-2"></i>Share your experiences</li>
+                                <li><i class="fas fa-arrow-right text-success me-2"></i>Ask clear, specific questions</li>
+                                <li><i class="fas fa-arrow-right text-success me-2"></i>Use appropriate categories</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-danger">
+                                <i class="fas fa-times-circle me-1"></i>Don'ts
+                            </h6>
+                            <ul class="list-unstyled">
+                                <li><i class="fas fa-arrow-right text-danger me-2"></i>Post spam or advertisements</li>
+                                <li><i class="fas fa-arrow-right text-danger me-2"></i>Use offensive language</li>
+                                <li><i class="fas fa-arrow-right text-danger me-2"></i>Share personal information</li>
+                                <li><i class="fas fa-arrow-right text-danger me-2"></i>Post irrelevant content</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Form validation
+(function() {
+    'use strict';
+    window.addEventListener('load', function() {
+        var forms = document.getElementsByClassName('needs-validation');
+        var validation = Array.prototype.filter.call(forms, function(form) {
+            form.addEventListener('submit', function(event) {
+                if (form.checkValidity() === false) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                form.classList.add('was-validated');
+            }, false);
+        });
+    }, false);
+})();
+
+// Character counter for content
+document.getElementById('content').addEventListener('input', function() {
+    var maxLength = 2000;
+    var currentLength = this.value.length;
+    var remaining = maxLength - currentLength;
+    
+    if (!document.getElementById('char-counter')) {
+        var counter = document.createElement('div');
+        counter.id = 'char-counter';
+        counter.className = 'form-text text-end';
+        this.parentNode.appendChild(counter);
+    }
+    
+    var counter = document.getElementById('char-counter');
+    counter.textContent = remaining + ' characters remaining';
+    
+    if (remaining < 0) {
+        counter.className = 'form-text text-end text-danger';
+    } else if (remaining < 100) {
+        counter.className = 'form-text text-end text-warning';
+    } else {
+        counter.className = 'form-text text-end text-muted';
+    }
+});
+</script>
+
+<style>
+.card {
+    border: none;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+
+.btn-primary {
+    background: linear-gradient(45deg, #0d6efd, #0b5ed7);
+    border: none;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(45deg, #0b5ed7, #0a58ca);
+    transform: translateY(-1px);
+}
+</style>
+{% endblock %}
