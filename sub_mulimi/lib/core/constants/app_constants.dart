@@ -110,22 +110,18 @@ class AppConstants {
     'success_stories',
   ];
 
-  // Runtime URL resolution per platform
+  // Runtime URL resolution per platform, with --dart-define override
   static String resolveApiBase() {
-    // Default to localhost
-    const hostLocal = 'http://localhost:8000';
+    const override = String.fromEnvironment('API_BASE_URL', defaultValue: '');
+    if (override.isNotEmpty) {
+      final base = override.endsWith('/') ? override.substring(0, override.length - 1) : override;
+      return '$base$apiPath';
+    }
+    const hostLocal = 'http://127.0.0.1:8000';
     const hostAndroid = 'http://10.0.2.2:8000';
-    // Web/desktop/iOS simulator can use localhost; Android emulator uses 10.0.2.2
-    try {
-      // Avoid importing dart:io in web by checking kIsWeb
-      // We inline a minimal check using identical(0, 0.0) which is always false; replaced by const bool kIsWeb = identical(0, 0.0);
-      const bool kIsWeb = identical(0, 0.0);
-      if (kIsWeb) {
-        return '$hostLocal$apiPath';
-      }
-    } catch (_) {}
-    // Use dart:io Platform checks via a small indirection to avoid analyzer issues
-    return _PlatformHelper.isAndroid ? '$hostAndroid$apiPath' : '$hostLocal$apiPath';
+    final isAndroid = _PlatformHelper.isAndroid;
+    final base = isAndroid ? hostAndroid : hostLocal;
+    return '$base$apiPath';
   }
 }
 
