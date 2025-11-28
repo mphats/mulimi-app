@@ -88,7 +88,7 @@
                             <p class="small text-muted mb-2">
                                 Get a magic link sent to your email for instant access
                             </p>
-                            <form method="POST" action="{% url 'magic_link_login' %}" id="magicLinkForm">
+                            <form method="POST" action="{% url 'users:magic_link_request' %}" id="magicLinkForm">
                                 {% csrf_token %}
                                 <div class="input-group">
                                     <input type="email" name="email" class="form-control" 
