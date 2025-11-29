@@ -88,7 +88,7 @@ MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 LOGIN_URL = "/login/"
-CSRF_TRUSTED_ORIGINS = ["https://mlimi-bfb3.onrender.com"]
+CSRF_TRUSTED_ORIGINS = ["https://mulimi-xijh.onrender.com"]
 
 CORS_ALLOW_ALL_ORIGINS = os.getenv("CORS_ALLOW_ALL", "true").lower() == "true"
 CORS_ALLOWED_ORIGINS = os.getenv("CORS_ALLOWED_ORIGINS", "").split(",") if not CORS_ALLOW_ALL_ORIGINS else []
